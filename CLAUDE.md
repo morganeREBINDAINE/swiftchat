@@ -37,7 +37,7 @@ This project is based on **`dunglas/symfony-docker`**. The full stack (FrankenPH
 docker compose up
 
 # Run Symfony commands
-docker compose exec php bin/console <command>
+docker compose exec php php bin/console <command>
 
 # Install PHP packages
 docker compose exec php composer require <package>
@@ -95,7 +95,10 @@ docker compose exec php bin/phpunit
 
 ### Database
 - **Always create a migration** after modifying an entity (`doctrine:migrations:diff`)
+- After generating a migration with `doctrine:migrations:diff`, STOP and show me the file
 - Never edit an already-applied migration — create a new one
+- Never run `doctrine:migrations:migrate` without explicit confirmation
+- Let me review the migration SQL before applying it
 - Fixtures in `src/DataFixtures/` — include at least 2 verified users with sample messages for portfolio demo
 - Never use `findAll()` without a limit — always paginate or constrain queries
 
@@ -229,3 +232,5 @@ APP_SECRET="your-app-secret"
 - Commit after each completed task with conventional commits format
 - Format: type(scope): description  (feat, fix, chore, refactor...)
 - Example: feat(auth): add registration form with email verification
+- Keep commit messages short: max 72 characters for the subject line
+- Commit subject only (no body) — the code speaks for itself

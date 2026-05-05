@@ -6,3 +6,6 @@ down:
 
 php:
 	docker exec -ti symfony-php-1 bash
+
+perm:
+	docker compose exec php chown -R 1000:1000 /app
