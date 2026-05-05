@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<p>Hi {{ username }},</p>
+
+<p>Thanks for signing up to SwiftChat! Please verify your email address by clicking the link below:</p>
+
+<p><a href="{{ signedUrl }}">Verify my email address</a></p>
+
+<p>This link expires on {{ expiresAt|date('d/m/Y') }} at {{ expiresAt|date('H:i') }} UTC.</p>
+
+<p>If you did not create a SwiftChat account, you can safely ignore this email.</p>
+</body>
+</html>
