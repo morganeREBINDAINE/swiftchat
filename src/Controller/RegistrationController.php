@@ -42,11 +42,10 @@ class RegistrationController extends AbstractController
             $this->em->flush();
 
             $signatureComponents = $this->verifyEmailHelper->generateSignature(
-                routeName: 'app_verify_email',
-                userId: $user->getId()->toRfc4122(),
-                userEmail: $user->getEmail(),
-                expiresAt: new \DateTimeImmutable('+1 hour'),
-                extraParams: ['id' => $user->getId()->toRfc4122()],
+                'app_verify_email',
+                $user->getId()->toRfc4122(),
+                $user->getEmail(),
+                ['id' => $user->getId()->toRfc4122()],
             );
 
             $this->mailer->send(
@@ -96,10 +95,10 @@ class RegistrationController extends AbstractController
         }
 
         try {
-            $this->verifyEmailHelper->validateEmailConfirmation(
-                signedUrl: $request->getUri(),
-                userId: $user->getId()->toRfc4122(),
-                userEmail: $user->getEmail(),
+            $this->verifyEmailHelper->validateEmailConfirmationFromRequest(
+                $request,
+                $user->getId()->toRfc4122(),
+                $user->getEmail(),
             );
         } catch (VerifyEmailExceptionInterface $e) {
             $this->addFlash('error', $e->getReason());
