@@ -8,6 +8,12 @@ framework:
     #esi: true
     #fragments: true
 
+    rate_limiter:
+        send_message:
+            policy: sliding_window
+            limit: 30
+            interval: '1 minute'
+
 when@test:
     framework:
         test: true

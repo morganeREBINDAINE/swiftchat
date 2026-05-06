@@ -1,14 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}SwiftChat{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💬</text></svg>">
+        <style>
+            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: system-ui, sans-serif; background: #f4f4f5; color: #18181b; min-height: 100vh; display: flex; flex-direction: column; }
+            a { color: #6366f1; text-decoration: none; }
+            a:hover { text-decoration: underline; }
 
-        {% block javascripts %}
-        {% endblock %}
+            /* Nav */
+            .nav { background: #18181b; color: #fff; display: flex; align-items: center; gap: 1.5rem; padding: .75rem 1.5rem; }
+            .nav__brand { font-weight: 700; font-size: 1.1rem; color: #fff; }
+            .nav__links { display: flex; gap: 1rem; margin-left: auto; align-items: center; }
+            .nav__links a { color: #a1a1aa; font-size: .9rem; }
+            .nav__links a:hover { color: #fff; text-decoration: none; }
+            .nav__user { color: #d4d4d8; font-size: .85rem; }
+
+            /* Flash messages */
+            .flashes { padding: .5rem 1.5rem; }
+            .flash { padding: .6rem 1rem; border-radius: .375rem; margin-bottom: .4rem; font-size: .9rem; }
+            .flash--success { background: #dcfce7; color: #166534; }
+            .flash--error { background: #fee2e2; color: #991b1b; }
+            .flash--info { background: #dbeafe; color: #1e40af; }
+
+            /* Main layout */
+            .page { flex: 1; display: flex; }
+
+            /* Sidebar */
+            .sidebar { width: 280px; background: #fff; border-right: 1px solid #e4e4e7; display: flex; flex-direction: column; }
+            .sidebar__header { padding: 1rem; border-bottom: 1px solid #e4e4e7; display: flex; justify-content: space-between; align-items: center; }
+            .sidebar__title { font-weight: 600; font-size: .95rem; }
+            .sidebar__list { flex: 1; overflow-y: auto; }
+            .conv-item { display: block; padding: .85rem 1rem; border-bottom: 1px solid #f4f4f5; cursor: pointer; color: inherit; }
+            .conv-item:hover { background: #f4f4f5; text-decoration: none; }
+            .conv-item--active { background: #eef2ff; border-left: 3px solid #6366f1; }
+            .conv-item__name { font-weight: 500; font-size: .9rem; }
+            .conv-item__date { font-size: .75rem; color: #71717a; margin-top: .15rem; }
+
+            /* Content area */
+            .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+            /* Auth / centered pages */
+            .auth-page { max-width: 400px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: .5rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+            .auth-page h1 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+            .form-group { margin-bottom: 1rem; }
+            .form-group label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: .3rem; color: #3f3f46; }
+            .form-group input[type=text],
+            .form-group input[type=email],
+            .form-group input[type=password] { width: 100%; padding: .55rem .75rem; border: 1px solid #d4d4d8; border-radius: .375rem; font-size: .9rem; }
+            .form-group input:focus { outline: 2px solid #6366f1; border-color: transparent; }
+            .btn { display: inline-block; padding: .6rem 1.2rem; border-radius: .375rem; font-size: .9rem; font-weight: 500; cursor: pointer; border: none; }
+            .btn--primary { background: #6366f1; color: #fff; }
+            .btn--primary:hover { background: #4f46e5; }
+            .btn--sm { padding: .35rem .75rem; font-size: .8rem; }
+            .btn--ghost { background: transparent; color: #6366f1; border: 1px solid #6366f1; }
+            .link-secondary { display: block; margin-top: 1rem; text-align: center; font-size: .85rem; color: #71717a; }
+        </style>
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}{% endblock %}
 
         {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
         {% if frankenphpHotReload %}
@@ -18,6 +70,30 @@
         {% endif %}
     </head>
     <body>
+        {% if app.user %}
+        <nav class="nav">
+            <a href="{{ path('conversation_list') }}" class="nav__brand">SwiftChat</a>
+            <div class="nav__links">
+                <a href="{{ path('conversation_list') }}">Messages</a>
+                <a href="{{ path('conversation_new') }}">New conversation</a>
+                <a href="{{ path('app_profile') }}">{{ app.user.username }}</a>
+                <a href="{{ path('app_logout') }}">Log out</a>
+            </div>
+        </nav>
+        {% endif %}
+
+        <div class="flashes">
+            {% for message in app.flashes('success') %}
+                <div class="flash flash--success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="flash flash--error">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('info') %}
+                <div class="flash flash--info">{{ message }}</div>
+            {% endfor %}
+        </div>
+
         {% block body %}{% endblock %}
     </body>
 </html>

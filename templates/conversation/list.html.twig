@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messages — SwiftChat{% endblock %}
+
+{% block body %}
+<div class="page">
+    <aside class="sidebar">
+        <div class="sidebar__header">
+            <span class="sidebar__title">Conversations</span>
+            <a href="{{ path('conversation_new') }}" class="btn btn--sm btn--ghost">+ New</a>
+        </div>
+        <div class="sidebar__list">
+            {% for conversation in conversations %}
+                {% set other = conversation.getOtherParticipant(app.user) %}
+                <a href="{{ path('conversation_show', { id: conversation.id }) }}" class="conv-item">
+                    <div class="conv-item__name">{{ other.username }}</div>
+                    <div class="conv-item__date">{{ conversation.updatedAt|date('d M Y, H:i') }}</div>
+                </a>
+            {% else %}
+                <p style="padding:1rem; color:#71717a; font-size:.85rem;">No conversations yet.</p>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <div class="content" style="align-items:center; justify-content:center; background:#f9f9fb;">
+        <div style="text-align:center; color:#71717a;">
+            <p style="font-size:2rem; margin-bottom:.5rem;">💬</p>
+            <p style="font-weight:600; color:#3f3f46;">Select a conversation or start a new one</p>
+            <a href="{{ path('conversation_new') }}" class="btn btn--primary" style="margin-top:1rem; display:inline-block;">
+                Start a conversation
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
