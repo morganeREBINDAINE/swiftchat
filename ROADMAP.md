@@ -49,22 +49,22 @@ EmailVerificationToken
 
 **Goal: installable project, database ready, working authentication**
 
-- [ ] Clone & start `dunglas/symfony-docker` (already done)
-- [ ] Configure `DATABASE_URL` in `.env.local`
-- [ ] Install dependencies:
+- [x] Clone & start `dunglas/symfony-docker` (already done)
+- [x] Configure `DATABASE_URL` in `.env.local`
+- [x] Install dependencies:
     - `symfony/mercure-bundle`
     - `symfony/messenger`
     - `symfony/doctrine-messenger`
     - `symfony/mailer`
     - `symfony/uid`
     - `symfonycasts/verify-email-bundle`
-- [ ] Entities: `User`, `Conversation`, `Message`, `EmailVerificationToken`
-- [ ] Initial migrations
-- [ ] Symfony Security configuration (provider, hasher, firewall, form_login)
-- [ ] `RegistrationFormType` + controller + verification email
-- [ ] Login + remember_me
-- [ ] Base fixtures (2–3 test users)
-- [ ] Tests: registration, login, email confirmation
+- [x] Entities: `User`, `Conversation`, `Message`, `EmailVerificationToken`
+- [x] Initial migrations
+- [x] Symfony Security configuration (provider, hasher, firewall, form_login)
+- [x] `RegistrationFormType` + controller + verification email
+- [x] Login + remember_me
+- [x] Base fixtures (2–3 test users)
+- [x] Tests: registration, login, email confirmation
 
 ---
 
@@ -72,15 +72,15 @@ EmailVerificationToken
 
 **Goal: send and receive messages, persistence, paginated loading**
 
-- [ ] `ConversationService::findOrCreate(User $a, User $b)`
-- [ ] `ConversationController`: conversation list + new conversation
-- [ ] `MessageController::send()` (POST, returns JSON)
-- [ ] `ConversationController::markAsRead()` (PATCH `/conversations/{id}/read` — bulk-marks all unread messages from the other participant; single DB update + single Mercure event in Phase 3)
-- [ ] `ConversationVoter`: only participants can access a conversation
-- [ ] Cursor pagination in `MessageRepository::findBeforeId()`
-- [ ] Twig templates: messaging layout, sidebar, message window
-- [ ] Rate limiting on send (RateLimiter component)
-- [ ] Tests: send message, access denied, mark as read (success + non-participant 403)
+- [x] `ConversationService::findOrCreate(User $a, User $b)`
+- [x] `ConversationController`: conversation list + new conversation
+- [x] `MessageController::send()` (POST, returns JSON)
+- [x] `ConversationController::markAsRead()` (PATCH `/conversations/{id}/read` — bulk-marks all unread messages from the other participant; single DB update + single Mercure event in Phase 3)
+- [x] `ConversationVoter`: only participants can access a conversation
+- [x] Cursor pagination in `MessageRepository::findBeforeId()`
+- [x] Twig templates: messaging layout, sidebar, message window
+- [x] Rate limiting on send (RateLimiter component)
+- [x] Tests: send message, access denied, mark as read (success + non-participant 403)
 
 ---
 
@@ -88,8 +88,8 @@ EmailVerificationToken
 
 **Goal: live messages, typing indicator, presence status**
 
-- [ ] Confirm Mercure Hub is reachable (FrankenPHP built-in — check `MERCURE_URL` env)
-- [ ] `MercurePublisher::publishMessage(Message $message)`
+- [x] Confirm Mercure Hub is reachable (FrankenPHP built-in — check `MERCURE_URL` env)
+- [x] `MercurePublisher::publishMessage(Message $message)`
 - [ ] `MercurePublisher::publishTyping(User $user, Conversation $conv)`
 - [ ] JWT subscriber claims scoped per conversation topic
 - [ ] `chat_controller.js`: EventSource → listen to topic, append message to DOM

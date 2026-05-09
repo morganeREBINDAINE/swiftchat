@@ -9,6 +9,7 @@ use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\ConversationRepository;
 use App\Security\Voter\ConversationVoter;
+use App\Service\MercurePublisher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -23,6 +24,7 @@ class MessageController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly MercurePublisher $mercurePublisher,
         #[Autowire(service: 'limiter.send_message')]
         private readonly RateLimiterFactory $sendMessageLimiter,
     ) {}
@@ -73,7 +75,8 @@ class MessageController extends AbstractController
         $this->em->persist($message);
         $this->em->flush();
 
-        // MercurePublisher::publishMessage() will be wired here in Phase 3
+        $this->mercurePublisher->publishMessage($message);
+
         // Messenger dispatch(NotifyUnreadMessageMessage) will be wired here in Phase 4
 
         return $this->json([
