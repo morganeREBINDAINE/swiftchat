@@ -12,13 +12,21 @@ use App\Repository\UserRepository;
 use App\Security\Voter\ConversationVoter;
 use App\Service\ConversationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
 
 class ConversationController extends AbstractController
 {
+    public function __construct(
+        #[Autowire(service: 'limiter.mark_read')]
+        private readonly RateLimiterFactory $markReadLimiter,
+    ) {}
+
     #[Route('/conversations', name: 'conversation_list', methods: ['GET'])]
     public function list(ConversationRepository $convRepo): Response
     {
@@ -78,6 +86,36 @@ class ConversationController extends AbstractController
         }
 
         return $this->render('conversation/new.html.twig');
+    }
+
+    #[Route('/conversations/{id}/read', name: 'conversation_mark_read', methods: ['PATCH'])]
+    public function markAsRead(string $id, ConversationRepository $convRepo, MessageRepository $messageRepo): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $limiter = $this->markReadLimiter->create($user->getId()->toRfc4122());
+        if (!$limiter->consume()->isAccepted()) {
+            return $this->json(['error' => 'Too many requests. Please slow down.'], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        try {
+            $conversation = $convRepo->find(Uuid::fromString($id));
+        } catch (\Throwable) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$conversation instanceof Conversation) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->denyAccessUnlessGranted(ConversationVoter::VIEW, $conversation);
+
+        $count = $messageRepo->markAllAsReadBy($conversation, $user);
+
+        // MercurePublisher::publishReadStatus() will be wired here in Phase 3
+
+        return $this->json(['markedCount' => $count]);
     }
 
     #[Route('/conversations/{id}', name: 'conversation_show', methods: ['GET'])]

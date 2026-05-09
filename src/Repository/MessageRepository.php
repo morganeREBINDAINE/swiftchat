@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Conversation;
 use App\Entity\Message;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -31,6 +32,21 @@ class MessageRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function markAllAsReadBy(Conversation $conversation, User $reader): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.readAt', ':now')
+            ->where('m.conversation = :conversation')
+            ->andWhere('m.sender != :reader')
+            ->andWhere('m.readAt IS NULL')
+            ->setParameter('conversation', $conversation)
+            ->setParameter('reader', $reader)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->execute();
     }
 
     public function save(Message $message, bool $flush = false): void

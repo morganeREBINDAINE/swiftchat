@@ -75,12 +75,12 @@ EmailVerificationToken
 - [ ] `ConversationService::findOrCreate(User $a, User $b)`
 - [ ] `ConversationController`: conversation list + new conversation
 - [ ] `MessageController::send()` (POST, returns JSON)
-- [ ] `MessageController::markAsRead()` (PATCH `read_at`)
+- [ ] `ConversationController::markAsRead()` (PATCH `/conversations/{id}/read` — bulk-marks all unread messages from the other participant; single DB update + single Mercure event in Phase 3)
 - [ ] `ConversationVoter`: only participants can access a conversation
 - [ ] Cursor pagination in `MessageRepository::findBeforeId()`
 - [ ] Twig templates: messaging layout, sidebar, message window
 - [ ] Rate limiting on send (RateLimiter component)
-- [ ] Tests: send message, access denied, mark as read
+- [ ] Tests: send message, access denied, mark as read (success + non-participant 403)
 
 ---
 
