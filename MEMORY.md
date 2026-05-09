@@ -1,6 +1,6 @@
 # Memory Index — SwiftChat
 
-- [SwiftChat roadmap progress](#roadmap-progress) — Phase 1 done, Phase 2 in progress (cursor pagination still needed)
+- [SwiftChat roadmap progress](#roadmap-progress) — Phase 1 done, Phase 2 complete, Phase 3 next
 
 ---
 
@@ -19,10 +19,9 @@ Done:
 - `ConversationController` (list, new, show, markAsRead) + functional tests
 - `MessageController::send()` (POST, JSON, rate-limited, CSRF) + functional tests
 - `ConversationVoter` (VIEW + SEND) + unit tests
-- `MessageRepository::findByConversation()` (basic, limit 50) + `markAllAsReadBy()` (bulk DQL UPDATE)
+- `MessageRepository::findByConversation()` + `findBeforeId()` (UUID v7 cursor) + `markAllAsReadBy()` (bulk DQL UPDATE)
+- `GET /conversations/{id}/messages?before={cursor}` — pagination endpoint
 - Twig templates: messaging layout, sidebar, message window
 - Design decision: markAsRead is conversation-level (`PATCH /conversations/{id}/read`), not per-message — single DB update + single Mercure event in Phase 3
 
-**Still needed:**
-- `MessageRepository::findBeforeId()` — cursor pagination
-- Tests for markAsRead (success + non-participant 403)
+### Phase 2 — Core Messaging ✅ Complete

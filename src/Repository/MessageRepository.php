@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Entity\User;
+use Symfony\Component\Uid\Uuid;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,6 +33,28 @@ class MessageRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Returns up to $limit messages sent before the message identified by $beforeId,
+     * in chronological order (oldest first). Used for cursor-based pagination.
+     * Relies on UUID v7 monotonic ordering instead of created_at to avoid ties.
+     *
+     * @return Message[]
+     */
+    public function findBeforeId(Conversation $conversation, Uuid $beforeId, int $limit = 50): array
+    {
+        $results = $this->createQueryBuilder('m')
+            ->where('m.conversation = :conversation')
+            ->andWhere('m.id < :beforeId')
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults($limit)
+            ->setParameter('conversation', $conversation)
+            ->setParameter('beforeId', $beforeId, 'uuid')
+            ->getQuery()
+            ->getResult();
+
+        return array_reverse($results);
     }
 
     public function markAllAsReadBy(Conversation $conversation, User $reader): int

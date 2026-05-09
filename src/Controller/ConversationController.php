@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Conversation;
+use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
@@ -116,6 +117,45 @@ class ConversationController extends AbstractController
         // MercurePublisher::publishReadStatus() will be wired here in Phase 3
 
         return $this->json(['markedCount' => $count]);
+    }
+
+    #[Route('/conversations/{id}/messages', name: 'conversation_messages', methods: ['GET'])]
+    public function messages(string $id, Request $request, ConversationRepository $convRepo, MessageRepository $messageRepo): JsonResponse
+    {
+        try {
+            $conversation = $convRepo->find(Uuid::fromString($id));
+        } catch (\Throwable) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$conversation instanceof Conversation) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->denyAccessUnlessGranted(ConversationVoter::VIEW, $conversation);
+
+        $beforeParam = $request->query->getString('before');
+
+        if ($beforeParam !== '') {
+            try {
+                $beforeId = Uuid::fromString($beforeParam);
+            } catch (\Throwable) {
+                return $this->json(['error' => 'Invalid cursor.'], Response::HTTP_BAD_REQUEST);
+            }
+            $messages = $messageRepo->findBeforeId($conversation, $beforeId);
+        } else {
+            $messages = $messageRepo->findByConversation($conversation);
+        }
+
+        return $this->json(array_map(
+            static fn(Message $m) => [
+                'id'        => $m->getId()->toRfc4122(),
+                'content'   => $m->getContent(),
+                'createdAt' => $m->getCreatedAt()->format(\DateTimeInterface::ATOM),
+                'sender'    => $m->getSender()->getUsername(),
+            ],
+            $messages,
+        ));
     }
 
     #[Route('/conversations/{id}', name: 'conversation_show', methods: ['GET'])]
