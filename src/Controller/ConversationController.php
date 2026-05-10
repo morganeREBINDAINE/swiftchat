@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Authorization;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
@@ -24,6 +25,7 @@ use Symfony\Component\Uid\Uuid;
 class ConversationController extends AbstractController
 {
     public function __construct(
+        private readonly Authorization $mercureAuthorization,
         #[Autowire(service: 'limiter.mark_read')]
         private readonly RateLimiterFactory $markReadLimiter,
     ) {}
@@ -159,7 +161,7 @@ class ConversationController extends AbstractController
     }
 
     #[Route('/conversations/{id}', name: 'conversation_show', methods: ['GET'])]
-    public function show(string $id, ConversationRepository $convRepo, MessageRepository $messageRepo): Response
+    public function show(string $id, Request $request, ConversationRepository $convRepo, MessageRepository $messageRepo): Response
     {
         try {
             $conversation = $convRepo->find(Uuid::fromString($id));
@@ -175,6 +177,12 @@ class ConversationController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
+
+        $convId = $conversation->getId()->toRfc4122();
+        $this->mercureAuthorization->setCookie($request, [
+            'conversation/' . $convId,
+            'typing/' . $convId,
+        ]);
 
         $messages = $messageRepo->findByConversation($conversation);
 

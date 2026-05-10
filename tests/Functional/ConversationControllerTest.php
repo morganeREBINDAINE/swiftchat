@@ -197,4 +197,34 @@ class ConversationControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
     }
+
+    public function testShowSetsMercureAuthorizationCookie(): void
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $userRepo = $container->get(UserRepository::class);
+
+        $alice = $userRepo->findByUsername('alice');
+        $bob = $userRepo->findByUsername('bob');
+
+        $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $convId = $conversation->getId()->toRfc4122();
+
+        $client->loginUser($alice);
+        $client->request('GET', '/conversations/' . $convId);
+
+        $this->assertResponseIsSuccessful();
+
+        $setCookieHeader = $client->getResponse()->headers->get('Set-Cookie', '');
+        $this->assertStringContainsString('mercureAuthorization=', $setCookieHeader);
+
+        preg_match('/mercureAuthorization=([^;]+)/', $setCookieHeader, $matches);
+        $jwt = $matches[1] ?? '';
+        $parts = explode('.', $jwt);
+        $this->assertCount(3, $parts, 'mercureAuthorization must be a valid JWT');
+
+        $claims = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+        $this->assertContains('conversation/' . $convId, $claims['mercure']['subscribe']);
+        $this->assertContains('typing/' . $convId, $claims['mercure']['subscribe']);
+    }
 }
