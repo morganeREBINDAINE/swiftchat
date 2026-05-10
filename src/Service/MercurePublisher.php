@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Conversation;
 use App\Entity\Message;
+use App\Entity\User;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 
@@ -27,6 +29,22 @@ class MercurePublisher
                 'senderId'       => $message->getSender()->getId()->toRfc4122(),
                 'senderUsername' => $message->getSender()->getUsername(),
                 'conversationId' => $conversation->getId()->toRfc4122(),
+            ], JSON_THROW_ON_ERROR),
+            private: true,
+        );
+
+        $this->hub->publish($update);
+    }
+
+    public function publishTyping(User $user, Conversation $conv): void
+    {
+        $topic = sprintf('typing/%s', $conv->getId()->toRfc4122());
+
+        $update = new Update(
+            topics: $topic,
+            data: json_encode([
+                'type'           => 'typing',
+                'senderUsername' => $user->getUsername(),
             ], JSON_THROW_ON_ERROR),
             private: true,
         );

@@ -89,6 +89,63 @@ class MercurePublisherTest extends TestCase
         $this->assertTrue($capturedUpdate->isPrivate());
     }
 
+    public function testPublishTypingSendsUpdateToTypingTopic(): void
+    {
+        [$alice, $bob, $conversation] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishTyping($alice, $conversation);
+
+        $this->assertContains('typing/' . $conversation->getId()->toRfc4122(), $capturedUpdate->getTopics());
+    }
+
+    public function testPublishTypingPayload(): void
+    {
+        [$alice, $bob, $conversation] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishTyping($alice, $conversation);
+
+        $payload = json_decode($capturedUpdate->getData(), true);
+
+        $this->assertSame('typing', $payload['type']);
+        $this->assertSame('alice', $payload['senderUsername']);
+    }
+
+    public function testPublishTypingIsPrivate(): void
+    {
+        [$alice, $bob, $conversation] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishTyping($alice, $conversation);
+
+        $this->assertTrue($capturedUpdate->isPrivate());
+    }
+
     /** @return array{User, User, Conversation, Message} */
     private function makeFixtures(): array
     {

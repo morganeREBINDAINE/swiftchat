@@ -90,7 +90,7 @@ EmailVerificationToken
 
 - [x] Confirm Mercure Hub is reachable (FrankenPHP built-in — check `MERCURE_URL` env)
 - [x] `MercurePublisher::publishMessage(Message $message)`
-- [ ] `MercurePublisher::publishTyping(User $user, Conversation $conv)`
+- [x] `MercurePublisher::publishTyping(User $user, Conversation $conv)`
 - [ ] JWT subscriber claims scoped per conversation topic
 - [ ] `chat_controller.js`: EventSource → listen to topic, append message to DOM
 - [ ] `typing_controller.js`: debounce input → POST `/typing`, listen SSE
