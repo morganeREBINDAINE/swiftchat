@@ -92,7 +92,7 @@ EmailVerificationToken
 - [x] `MercurePublisher::publishMessage(Message $message)`
 - [x] `MercurePublisher::publishTyping(User $user, Conversation $conv)`
 - [x] JWT subscriber claims scoped per conversation topic
-- [ ] `chat_controller.js`: EventSource → listen to topic, append message to DOM
+- [x] `chat_controller.js`: EventSource → listen to topic, append message to DOM
 - [ ] `typing_controller.js`: debounce input → POST `/typing`, listen SSE
 - [ ] `PresenceService`: update `presence_status` + publish to Mercure
 - [ ] Unread badge updated in real time
