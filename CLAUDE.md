@@ -14,17 +14,17 @@
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Symfony 7.x (PHP 8.3+) |
-| Runtime | FrankenPHP (via `dunglas/symfony-docker`) |
-| Web server | Caddy (via `dunglas/symfony-docker`) |
+| Layer | Technology                                                   |
+|---|--------------------------------------------------------------|
+| Framework | Symfony 7.x (PHP 8.3+)                                       |
+| Runtime | FrankenPHP (via `dunglas/symfony-docker`)                    |
+| Web server | Caddy (via `dunglas/symfony-docker`)                         |
 | Real-time | Mercure Hub — **built into FrankenPHP, no separate service** |
-| Async | Symfony Messenger + Doctrine transport |
-| Mailer | Symfony Mailer + Brevo SMTP |
-| Database | PostgreSQL |
-| Frontend | Twig + Stimulus (or vanilla JS) |
-| Tests | PHPUnit + Symfony WebTestCase |
+| Async | Symfony Messenger + Doctrine transport                       |
+| Mailer | Symfony Mailer + Brevo SMTP                                  |
+| Database | PostgreSQL                                                   |
+| Frontend | Twig + Stimulus + AssetMapper                                |
+| Tests | PHPUnit + Symfony WebTestCase                                |
 
 ---
 
@@ -60,7 +60,6 @@ docker compose exec php bin/phpunit
 - PHP 8.3+: use **readonly properties**, **enums**, **named arguments**, **match expressions** where appropriate
 - Strict typing everywhere: `declare(strict_types=1)` at the top of every file
 - **Constructor injection only** — no `$this->getDoctrine()`, no service locator pattern
-- **No business logic in controllers** — controllers call services, services do the work
 - Doctrine entities: use **PHP attributes** (no YAML, no XML)
 - UUIDs for all primary keys (`Uuid::v7()` via `symfony/uid`) — v7 is chronologically sortable
 - Repository return types must always be explicit (`?Message`, `Message[]`, etc.)
@@ -82,7 +81,6 @@ docker compose exec php bin/phpunit
 - **Message DTOs** live in `src/Messenger/Message/` (readonly classes)
 - **Handlers** live in `src/Messenger/Handler/` (decorated with `#[AsMessageHandler]`)
 - Every Handler must have a dedicated unit test covering all cases
-- `DelayStamp` for the email notification = **300 000 ms (5 minutes)**
 - Never re-dispatch a message from inside a handler
 
 ### Mercure
@@ -104,6 +102,7 @@ docker compose exec php bin/phpunit
 
 ### Frontend
 - No jQuery
+- Use Twig, Stimulus and AssetMapper
 - EventSource (Mercure) interactions are encapsulated in a Stimulus controller or a dedicated JS class
 - **Always close EventSource listeners** when the user navigates away from a conversation — no orphan listeners
 - `Enter` sends the message, `Shift+Enter` inserts a line break
@@ -131,11 +130,19 @@ templates/
   emails/           # HTML + plain text email templates
   base.html.twig
 assets/
-  controllers/      # Stimulus JS controllers
-  styles/
+  app.js            # ES module entry point (loaded on every page via importmap)
+  styles/           # Global CSS
+  js/
+    controllers/    # Vanilla JS controller classes (e.g. ChatController)
+    pages/          # Per-page ES module entrypoints (registered in importmap.php)
+    tools/          # Pure utility functions (e.g. escapeHtml)
 tests/
   Unit/             # Pure PHPUnit (handlers, services)
   Functional/       # WebTestCase (controllers, auth, access control)
+  js/
+    controllers/    # JS unit tests — controller classes
+    pages/          # JS functional/E2E tests — full page flows
+    tools/          # JS unit tests — utility functions
 ```
 
 ---
@@ -214,7 +221,7 @@ APP_SECRET="your-app-secret"
 
 ## What Claude Code Must NOT Do
 
-- Put business logic in controllers
+- Controllers must be thin and only delegate to services.
 - Use `findAll()` without pagination
 - Edit already-applied migrations
 - Access conversations without going through the Voter

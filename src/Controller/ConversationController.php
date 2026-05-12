@@ -12,6 +12,7 @@ use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\ConversationVoter;
 use App\Service\ConversationService;
+use App\Service\MercurePublisher;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,8 +27,11 @@ class ConversationController extends AbstractController
 {
     public function __construct(
         private readonly Authorization $mercureAuthorization,
+        private readonly MercurePublisher $mercurePublisher,
         #[Autowire(service: 'limiter.mark_read')]
         private readonly RateLimiterFactory $markReadLimiter,
+        #[Autowire(service: 'limiter.typing')]
+        private readonly RateLimiterFactory $typingLimiter,
     ) {}
 
     #[Route('/conversations', name: 'conversation_list', methods: ['GET'])]
@@ -158,6 +162,38 @@ class ConversationController extends AbstractController
             ],
             $messages,
         ));
+    }
+
+    #[Route('/conversations/{id}/typing', name: 'conversation_typing', methods: ['POST'])]
+    public function typing(string $id, Request $request, ConversationRepository $convRepo): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $limiter = $this->typingLimiter->create($user->getId()->toRfc4122());
+        if (!$limiter->consume()->isAccepted()) {
+            return $this->json(null, Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        if (!$this->isCsrfTokenValid('typing', $request->request->getString('_token'))) {
+            return $this->json(['error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $conversation = $convRepo->find(Uuid::fromString($id));
+        } catch (\Throwable) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$conversation instanceof Conversation) {
+            return $this->json(['error' => 'Conversation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->denyAccessUnlessGranted(ConversationVoter::VIEW, $conversation);
+
+        $this->mercurePublisher->publishTyping($user, $conversation);
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/conversations/{id}', name: 'conversation_show', methods: ['GET'])]
