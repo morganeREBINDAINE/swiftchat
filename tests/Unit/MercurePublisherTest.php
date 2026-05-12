@@ -146,6 +146,65 @@ class MercurePublisherTest extends TestCase
         $this->assertTrue($capturedUpdate->isPrivate());
     }
 
+    public function testPublishPresenceSendsUpdateToPresenceTopic(): void
+    {
+        [$alice] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishPresence($alice);
+
+        $this->assertContains('presence/' . $alice->getId()->toRfc4122(), $capturedUpdate->getTopics());
+    }
+
+    public function testPublishPresencePayload(): void
+    {
+        [$alice] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishPresence($alice);
+
+        $payload = json_decode($capturedUpdate->getData(), true);
+
+        $this->assertSame('presence', $payload['type']);
+        $this->assertSame($alice->getId()->toRfc4122(), $payload['userId']);
+        $this->assertSame('offline', $payload['status']);
+        $this->assertNull($payload['lastSeenAt']);
+    }
+
+    public function testPublishPresenceIsPrivate(): void
+    {
+        [$alice] = $this->makeFixtures();
+
+        $capturedUpdate = null;
+        $this->hub
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
+                $capturedUpdate = $update;
+                return 'urn:uuid:test';
+            });
+
+        $this->publisher->publishPresence($alice);
+
+        $this->assertTrue($capturedUpdate->isPrivate());
+    }
+
     /** @return array{User, User, Conversation, Message} */
     private function makeFixtures(): array
     {

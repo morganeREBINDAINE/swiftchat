@@ -94,7 +94,7 @@ EmailVerificationToken
 - [x] JWT subscriber claims scoped per conversation topic
 - [x] `chat_controller.js`: EventSource → listen to topic, append message to DOM
 - [ ] `typing_controller.js`: debounce input → POST `/typing`, listen SSE
-- [ ] `PresenceService`: update `presence_status` + publish to Mercure
+- [x] `PresenceService`: update `presence_status` + publish to Mercure
 - [ ] Unread badge updated in real time
 - [ ] EventSource cleanup on conversation switch (no orphan listeners)
 - [ ] Tests: mocked Mercure publish, presence update

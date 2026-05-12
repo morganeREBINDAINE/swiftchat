@@ -51,4 +51,22 @@ class MercurePublisher
 
         $this->hub->publish($update);
     }
+
+    public function publishPresence(User $user): void
+    {
+        $topic = sprintf('presence/%s', $user->getId()->toRfc4122());
+
+        $update = new Update(
+            topics: $topic,
+            data: json_encode([
+                'type'       => 'presence',
+                'userId'     => $user->getId()->toRfc4122(),
+                'status'     => $user->getPresenceStatus()->value,
+                'lastSeenAt' => $user->getLastSeenAt()?->format(\DateTimeInterface::ATOM),
+            ], JSON_THROW_ON_ERROR),
+            private: true,
+        );
+
+        $this->hub->publish($update);
+    }
 }
