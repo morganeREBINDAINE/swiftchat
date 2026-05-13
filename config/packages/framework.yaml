@@ -21,6 +21,10 @@ framework:
             policy: fixed_window
             limit: 1
             interval: '2 seconds'
+        heartbeat:
+            policy: sliding_window
+            limit: 5
+            interval: '1 minute'
 
 when@test:
     framework:

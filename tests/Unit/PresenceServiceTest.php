@@ -4,120 +4,50 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
-use App\Entity\User;
 use App\Enum\PresenceStatus;
 use App\Service\MercurePublisher;
 use App\Service\PresenceService;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class PresenceServiceTest extends TestCase
 {
-    private EntityManagerInterface&MockObject $em;
     private MercurePublisher&MockObject $publisher;
     private PresenceService $service;
 
     protected function setUp(): void
     {
-        $this->em        = $this->createMock(EntityManagerInterface::class);
         $this->publisher = $this->createMock(MercurePublisher::class);
-        $this->service   = new PresenceService($this->em, $this->publisher);
+        $this->service   = new PresenceService($this->publisher);
     }
 
-    public function testUpdateStatusSetsPresenceOnUser(): void
+    public function testUpdateStatusPublishesOnlineToMercure(): void
     {
-        $user = $this->makeUser();
-
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence')->with($user);
-
-        $this->service->updateStatus($user, PresenceStatus::Online);
-
-        $this->assertSame(PresenceStatus::Online, $user->getPresenceStatus());
-    }
-
-    public function testUpdateStatusUpdatesLastSeenAt(): void
-    {
-        $user = $this->makeUser();
-        $before = new \DateTimeImmutable();
-
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence');
-
-        $this->service->updateStatus($user, PresenceStatus::Offline);
-
-        $this->assertNotNull($user->getLastSeenAt());
-        $this->assertGreaterThanOrEqual($before, $user->getLastSeenAt());
-    }
-
-    public function testUpdateStatusFlushesEntityManager(): void
-    {
-        $user = $this->makeUser();
-
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence');
-
-        $this->service->updateStatus($user, PresenceStatus::Away);
-    }
-
-    public function testUpdateStatusPublishesToMercure(): void
-    {
-        $user = $this->makeUser();
-
-        $this->em->expects($this->once())->method('flush');
         $this->publisher
             ->expects($this->once())
             ->method('publishPresence')
-            ->with($user);
+            ->with('user-uuid-123', PresenceStatus::Online);
 
-        $this->service->updateStatus($user, PresenceStatus::Online);
+        $this->service->updateStatus('user-uuid-123', PresenceStatus::Online);
     }
 
-    public function testMarkOnlineSetsOnlineStatus(): void
+    public function testUpdateStatusPublishesOfflineToMercure(): void
     {
-        $user = $this->makeUser();
+        $this->publisher
+            ->expects($this->once())
+            ->method('publishPresence')
+            ->with('user-uuid-123', PresenceStatus::Offline);
 
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence');
-
-        $this->service->markOnline($user);
-
-        $this->assertSame(PresenceStatus::Online, $user->getPresenceStatus());
+        $this->service->updateStatus('user-uuid-123', PresenceStatus::Offline);
     }
 
-    public function testMarkOfflineSetsOfflineStatus(): void
+    public function testUpdateStatusPublishesAwayToMercure(): void
     {
-        $user = $this->makeUser();
-        $user->setPresenceStatus(PresenceStatus::Online);
+        $this->publisher
+            ->expects($this->once())
+            ->method('publishPresence')
+            ->with('user-uuid-123', PresenceStatus::Away);
 
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence');
-
-        $this->service->markOffline($user);
-
-        $this->assertSame(PresenceStatus::Offline, $user->getPresenceStatus());
-    }
-
-    public function testMarkAwaySetsAwayStatus(): void
-    {
-        $user = $this->makeUser();
-
-        $this->em->expects($this->once())->method('flush');
-        $this->publisher->expects($this->once())->method('publishPresence');
-
-        $this->service->markAway($user);
-
-        $this->assertSame(PresenceStatus::Away, $user->getPresenceStatus());
-    }
-
-    private function makeUser(): User
-    {
-        $user = new User();
-        $user->setUsername('alice');
-        $user->setEmail('alice@example.com');
-        $user->setPassword('hashed');
-
-        return $user;
+        $this->service->updateStatus('user-uuid-123', PresenceStatus::Away);
     }
 }

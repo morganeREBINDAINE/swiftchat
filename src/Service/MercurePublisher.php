@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Entity\User;
+use App\Enum\PresenceStatus;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 
@@ -52,17 +53,16 @@ class MercurePublisher
         $this->hub->publish($update);
     }
 
-    public function publishPresence(User $user): void
+    public function publishPresence(string $userId, PresenceStatus $status): void
     {
-        $topic = sprintf('presence/%s', $user->getId()->toRfc4122());
+        $topic = sprintf('presence/%s', $userId);
 
         $update = new Update(
             topics: $topic,
             data: json_encode([
                 'type'       => 'presence',
-                'userId'     => $user->getId()->toRfc4122(),
-                'status'     => $user->getPresenceStatus()->value,
-                'lastSeenAt' => $user->getLastSeenAt()?->format(\DateTimeInterface::ATOM),
+                'userId'     => $userId,
+                'status'     => $status->value,
             ], JSON_THROW_ON_ERROR),
             private: true,
         );

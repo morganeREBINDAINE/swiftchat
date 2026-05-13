@@ -1,5 +1,6 @@
-import { ChatController }   from '../controllers/chat-controller.js';
-import { TypingController } from '../controllers/typing-controller.js';
+import { ChatController }        from '../controllers/chat-controller.js';
+import { TypingController }       from '../controllers/typing-controller.js';
+import { PeerPresenceWatcher }    from '../controllers/peer-presence-watcher.js';
 
 (function () {
     const messagesEl = document.getElementById('chat-messages');
@@ -12,6 +13,15 @@ import { TypingController } from '../controllers/typing-controller.js';
 
     const typing = new TypingController(messagesEl, textarea, indicator);
     const chat   = new ChatController(messagesEl, () => typing.hide());
+
+    if (messagesEl.dataset.presenceUrl) {
+        new PeerPresenceWatcher(messagesEl.dataset.presenceUrl, (status) => {
+            const dot   = document.getElementById('presence-dot');
+            const label = document.getElementById('presence-label');
+            if (dot)   dot.className = `presence-dot presence-dot--${status}`;
+            if (label) label.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        });
+    }
 
     messagesEl.scrollTop = messagesEl.scrollHeight;
 

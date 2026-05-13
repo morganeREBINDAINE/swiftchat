@@ -43,6 +43,14 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: symfony-redis-1
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
 volumes:
   caddy_data:
   caddy_config:

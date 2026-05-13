@@ -12,8 +12,12 @@
         <div class="sidebar__list">
             {% for conversation in conversations %}
                 {% set other = conversation.getOtherParticipant(app.user) %}
+                {% set status = presenceMap[other.id] ?? 'offline' %}
                 <a href="{{ path('conversation_show', { id: conversation.id }) }}" class="conv-item">
-                    <div class="conv-item__name">{{ other.username }}</div>
+                    <div class="conv-item__name" style="display:flex; align-items:center; gap:.4rem;">
+                        <span class="presence-dot presence-dot--{{ status }}"></span>
+                        {{ other.username }}
+                    </div>
                     <div class="conv-item__date">{{ conversation.updatedAt|date('d M Y, H:i') }}</div>
                 </a>
             {% else %}

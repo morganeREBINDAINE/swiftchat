@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Enum\PresenceStatus;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -43,19 +42,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => true])]
     private bool $emailNotificationsEnabled = true;
 
-    #[ORM\Column(type: 'string', enumType: PresenceStatus::class)]
-    private PresenceStatus $presenceStatus;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastSeenAt = null;
-
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
         $this->id = Uuid::v7();
-        $this->presenceStatus = PresenceStatus::Offline;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -152,30 +144,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailNotificationsEnabled(bool $emailNotificationsEnabled): static
     {
         $this->emailNotificationsEnabled = $emailNotificationsEnabled;
-
-        return $this;
-    }
-
-    public function getPresenceStatus(): PresenceStatus
-    {
-        return $this->presenceStatus;
-    }
-
-    public function setPresenceStatus(PresenceStatus $presenceStatus): static
-    {
-        $this->presenceStatus = $presenceStatus;
-
-        return $this;
-    }
-
-    public function getLastSeenAt(): ?\DateTimeImmutable
-    {
-        return $this->lastSeenAt;
-    }
-
-    public function setLastSeenAt(?\DateTimeImmutable $lastSeenAt): static
-    {
-        $this->lastSeenAt = $lastSeenAt;
 
         return $this;
     }

@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use App\Security\Voter\ConversationVoter;
 use App\Service\ConversationService;
 use App\Service\MercurePublisher;
+use App\Service\PresenceRedisService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,6 +29,7 @@ class ConversationController extends AbstractController
     public function __construct(
         private readonly Authorization $mercureAuthorization,
         private readonly MercurePublisher $mercurePublisher,
+        private readonly PresenceRedisService $presenceRedis,
         #[Autowire(service: 'limiter.mark_read')]
         private readonly RateLimiterFactory $markReadLimiter,
         #[Autowire(service: 'limiter.typing')]
@@ -42,8 +44,15 @@ class ConversationController extends AbstractController
 
         $conversations = $convRepo->findForUser($user);
 
+        $presenceMap = [];
+        foreach ($conversations as $conv) {
+            $otherId = $conv->getOtherParticipant($user)->getId()->toRfc4122();
+            $presenceMap[$otherId] = $this->presenceRedis->getPresence($otherId)->value;
+        }
+
         return $this->render('conversation/list.html.twig', [
             'conversations' => $conversations,
+            'presenceMap'   => $presenceMap,
         ]);
     }
 
@@ -214,18 +223,23 @@ class ConversationController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $convId = $conversation->getId()->toRfc4122();
+        $convId  = $conversation->getId()->toRfc4122();
+        $other   = $conversation->getOtherParticipant($user);
+        $otherId = $other->getId()->toRfc4122();
+
         $this->mercureAuthorization->setCookie($request, [
             'conversation/' . $convId,
-            'typing/' . $convId,
+            'typing/'        . $convId,
+            'presence/'      . $otherId,
         ]);
 
         $messages = $messageRepo->findByConversation($conversation);
 
         return $this->render('conversation/show.html.twig', [
-            'conversation' => $conversation,
-            'messages' => $messages,
-            'other' => $conversation->getOtherParticipant($user),
+            'conversation'   => $conversation,
+            'messages'       => $messages,
+            'other'          => $other,
+            'otherPresence'  => $this->presenceRedis->getPresence($otherId)->value,
         ]);
     }
 }

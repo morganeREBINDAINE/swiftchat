@@ -148,7 +148,7 @@ class MercurePublisherTest extends TestCase
 
     public function testPublishPresenceSendsUpdateToPresenceTopic(): void
     {
-        [$alice] = $this->makeFixtures();
+        $userId = 'a1b2c3d4-0000-7000-0000-000000000001';
 
         $capturedUpdate = null;
         $this->hub
@@ -159,14 +159,14 @@ class MercurePublisherTest extends TestCase
                 return 'urn:uuid:test';
             });
 
-        $this->publisher->publishPresence($alice);
+        $this->publisher->publishPresence($userId, \App\Enum\PresenceStatus::Online);
 
-        $this->assertContains('presence/' . $alice->getId()->toRfc4122(), $capturedUpdate->getTopics());
+        $this->assertContains('presence/' . $userId, $capturedUpdate->getTopics());
     }
 
     public function testPublishPresencePayload(): void
     {
-        [$alice] = $this->makeFixtures();
+        $userId = 'a1b2c3d4-0000-7000-0000-000000000001';
 
         $capturedUpdate = null;
         $this->hub
@@ -177,19 +177,18 @@ class MercurePublisherTest extends TestCase
                 return 'urn:uuid:test';
             });
 
-        $this->publisher->publishPresence($alice);
+        $this->publisher->publishPresence($userId, \App\Enum\PresenceStatus::Away);
 
         $payload = json_decode($capturedUpdate->getData(), true);
 
         $this->assertSame('presence', $payload['type']);
-        $this->assertSame($alice->getId()->toRfc4122(), $payload['userId']);
-        $this->assertSame('offline', $payload['status']);
-        $this->assertNull($payload['lastSeenAt']);
+        $this->assertSame($userId, $payload['userId']);
+        $this->assertSame('away', $payload['status']);
     }
 
     public function testPublishPresenceIsPrivate(): void
     {
-        [$alice] = $this->makeFixtures();
+        $userId = 'a1b2c3d4-0000-7000-0000-000000000001';
 
         $capturedUpdate = null;
         $this->hub
@@ -200,7 +199,7 @@ class MercurePublisherTest extends TestCase
                 return 'urn:uuid:test';
             });
 
-        $this->publisher->publishPresence($alice);
+        $this->publisher->publishPresence($userId, \App\Enum\PresenceStatus::Offline);
 
         $this->assertTrue($capturedUpdate->isPrivate());
     }

@@ -70,7 +70,12 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
+    <body{% if app.user %}
+        data-presence-heartbeat-url="{{ path('presence_heartbeat') }}"
+        data-presence-offline-url="{{ path('presence_offline') }}"
+        data-presence-csrf-heartbeat="{{ csrf_token('heartbeat') }}"
+        data-presence-csrf-offline="{{ csrf_token('presence_offline') }}"
+    {% endif %}>
         {% if app.user %}
         <nav class="nav">
             <a href="{{ path('conversation_list') }}" class="nav__brand">SwiftChat</a>
