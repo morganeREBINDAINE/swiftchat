@@ -48,3 +48,11 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 ###< symfony/mailer ###
+
+  worker:
+    image: ${IMAGES_PREFIX:-}app-php-dev
+    volumes:
+      - ./:/app
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
+      XDEBUG_MODE: "off"
