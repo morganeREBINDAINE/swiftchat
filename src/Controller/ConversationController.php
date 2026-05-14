@@ -37,7 +37,7 @@ class ConversationController extends AbstractController
     ) {}
 
     #[Route('/conversations', name: 'conversation_list', methods: ['GET'])]
-    public function list(ConversationRepository $convRepo): Response
+    public function list(ConversationRepository $convRepo, MessageRepository $messageRepo): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -46,13 +46,16 @@ class ConversationController extends AbstractController
 
         $presenceMap = [];
         foreach ($conversations as $conv) {
-            $otherId = $conv->getOtherParticipant($user)->getId()->toRfc4122();
+            $otherId               = $conv->getOtherParticipant($user)->getId()->toRfc4122();
             $presenceMap[$otherId] = $this->presenceRedis->getPresence($otherId)->value;
         }
+
+        $unreadMap = $messageRepo->countUnreadPerConversation($conversations, $user);
 
         return $this->render('conversation/list.html.twig', [
             'conversations' => $conversations,
             'presenceMap'   => $presenceMap,
+            'unreadMap'     => $unreadMap,
         ]);
     }
 

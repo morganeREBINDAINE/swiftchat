@@ -72,6 +72,38 @@ class MessageRepository extends ServiceEntityRepository
             ->execute();
     }
 
+    /**
+     * @param Conversation[] $conversations
+     * @return array<string, int> keyed by conversation UUID (RFC4122), default 0
+     */
+    public function countUnreadPerConversation(array $conversations, User $user): array
+    {
+        if ($conversations === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('m')
+            ->select('IDENTITY(m.conversation) AS convId, COUNT(m.id) AS cnt')
+            ->where('m.conversation IN (:conversations)')
+            ->andWhere('m.sender != :user')
+            ->andWhere('m.readAt IS NULL')
+            ->groupBy('m.conversation')
+            ->setParameter('conversations', $conversations)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($conversations as $conv) {
+            $map[$conv->getId()->toRfc4122()] = 0;
+        }
+        foreach ($rows as $row) {
+            $map[$row['convId']] = (int) $row['cnt'];
+        }
+
+        return $map;
+    }
+
     public function save(Message $message, bool $flush = false): void
     {
         $this->getEntityManager()->persist($message);

@@ -2,6 +2,18 @@
 
 {% block title %}Messages — SwiftChat{% endblock %}
 
+{% block stylesheets %}
+<style>
+    .unread-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 1.25rem; height: 1.25rem; padding: 0 .35rem;
+        border-radius: 999px; background: #6366f1; color: #fff;
+        font-size: .7rem; font-weight: 700; margin-left: auto; flex-shrink: 0;
+    }
+    .unread-badge--hidden { display: none; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="page">
     <aside class="sidebar">
@@ -13,10 +25,12 @@
             {% for conversation in conversations %}
                 {% set other = conversation.getOtherParticipant(app.user) %}
                 {% set status = presenceMap[other.id] ?? 'offline' %}
+                {% set unread = unreadMap[conversation.id] ?? 0 %}
                 <a href="{{ path('conversation_show', { id: conversation.id }) }}" class="conv-item">
                     <div class="conv-item__name" style="display:flex; align-items:center; gap:.4rem;">
                         <span class="presence-dot presence-dot--{{ status }}"></span>
                         {{ other.username }}
+                        <span class="unread-badge {{ unread == 0 ? 'unread-badge--hidden' : '' }}">{{ unread }}</span>
                     </div>
                     <div class="conv-item__date">{{ conversation.updatedAt|date('d M Y, H:i') }}</div>
                 </a>

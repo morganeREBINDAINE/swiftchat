@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
+use App\Entity\Message;
+use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Service\ConversationService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ConversationControllerTest extends WebTestCase
@@ -226,5 +229,61 @@ class ConversationControllerTest extends WebTestCase
         $claims = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
         $this->assertContains('conversation/' . $convId, $claims['mercure']['subscribe']);
         $this->assertContains('typing/' . $convId, $claims['mercure']['subscribe']);
+    }
+
+    // --- unread badge ---
+
+    public function testListShowsVisibleBadgeForUnreadMessages(): void
+    {
+        $client    = static::createClient();
+        $container = static::getContainer();
+        $userRepo  = $container->get(UserRepository::class);
+        $em        = $container->get(EntityManagerInterface::class);
+        $messageRepo = $container->get(MessageRepository::class);
+
+        $alice = $userRepo->findByUsername('alice');
+        $bob   = $userRepo->findByUsername('bob');
+        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $convId = $conv->getId()->toRfc4122();
+
+        $before = $messageRepo->countUnreadPerConversation([$conv], $alice)[$convId];
+
+        $em->persist(new Message($conv, $bob, 'Unread message'));
+        $em->flush();
+
+        $client->loginUser($alice);
+        $client->request('GET', '/conversations');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.unread-badge:not(.unread-badge--hidden)');
+
+        $badgeText = (int) trim($client->getCrawler()->filter('.unread-badge:not(.unread-badge--hidden)')->first()->text());
+        $this->assertSame($before + 1, $badgeText);
+    }
+
+    public function testListHidesBadgeAfterAllMessagesAreRead(): void
+    {
+        $client    = static::createClient();
+        $container = static::getContainer();
+        $userRepo  = $container->get(UserRepository::class);
+        $messageRepo = $container->get(MessageRepository::class);
+
+        $alice = $userRepo->findByUsername('alice');
+        $bob   = $userRepo->findByUsername('bob');
+        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+
+        $messageRepo->markAllAsReadBy($conv, $alice);
+
+        $client->loginUser($alice);
+        $client->request('GET', '/conversations');
+
+        $this->assertResponseIsSuccessful();
+
+        $crawler = $client->getCrawler();
+        $visibleBadges = $crawler->filter('.conv-item .unread-badge:not(.unread-badge--hidden)');
+        foreach ($visibleBadges as $node) {
+            $text = trim($node->textContent);
+            $this->assertNotSame('0', $text, 'A badge showing 0 should be hidden');
+        }
     }
 }
