@@ -93,8 +93,11 @@ EmailVerificationToken
 - [x] `MercurePublisher::publishTyping(User $user, Conversation $conv)`
 - [x] JWT subscriber claims scoped per conversation topic
 - [x] `chat_controller.js`: EventSource → listen to topic, append message to DOM
-- [ ] `typing_controller.js`: debounce input → POST `/typing`, listen SSE
-- [x] `PresenceService`: update `presence_status` + publish to Mercure
+- [x] `typing_controller.js`: debounce input → POST `/typing`, listen SSE
+- [x] `PresenceService`: Redis-based presence (TTL 90 s online / 3 min away), `PresenceCleanupCommand` cron
+- [x] `presence_controller.js`: heartbeat every 60 s, idle/hidden → away, `sendBeacon` on `beforeunload`
+- [x] `peer_presence_watcher.js`: EventSource on `presence/{userId}`, 3 s offline delay
+- [x] Presence dot displayed in conversation list (static, Redis-fetched) and chat header (real-time Mercure)
 - [ ] Unread badge updated in real time
 - [ ] EventSource cleanup on conversation switch (no orphan listeners)
 - [ ] Tests: mocked Mercure publish, presence update
