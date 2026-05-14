@@ -231,6 +231,35 @@ class ConversationControllerTest extends WebTestCase
         $this->assertContains('typing/' . $convId, $claims['mercure']['subscribe']);
     }
 
+    // --- show: mark as read on open ---
+
+    public function testShowMarksUnreadMessagesAsReadOnOpen(): void
+    {
+        $client    = static::createClient();
+        $container = static::getContainer();
+        $userRepo  = $container->get(UserRepository::class);
+        $em        = $container->get(EntityManagerInterface::class);
+        $messageRepo = $container->get(MessageRepository::class);
+
+        $alice = $userRepo->findByUsername('alice');
+        $bob   = $userRepo->findByUsername('bob');
+        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+
+        $msg = new Message($conv, $bob, 'Unread message');
+        $em->persist($msg);
+        $em->flush();
+
+        $this->assertNull($em->find(Message::class, $msg->getId())->getReadAt());
+
+        $client->loginUser($alice);
+        $client->request('GET', '/conversations/' . $conv->getId()->toRfc4122());
+
+        $this->assertResponseIsSuccessful();
+
+        $em->clear();
+        $this->assertNotNull($em->find(Message::class, $msg->getId())->getReadAt());
+    }
+
     // --- unread badge ---
 
     public function testListShowsVisibleBadgeForUnreadMessages(): void

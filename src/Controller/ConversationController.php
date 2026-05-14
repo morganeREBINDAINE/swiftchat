@@ -236,6 +236,8 @@ class ConversationController extends AbstractController
             'presence/'      . $otherId,
         ]);
 
+        $messageRepo->markAllAsReadBy($conversation, $user);
+
         $messages = $messageRepo->findByConversation($conversation);
 
         return $this->render('conversation/show.html.twig', [
