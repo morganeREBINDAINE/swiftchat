@@ -1,6 +1,7 @@
-import { ChatController }        from '../controllers/chat-controller.js';
-import { TypingController }       from '../controllers/typing-controller.js';
-import { PeerPresenceWatcher }    from '../controllers/peer-presence-watcher.js';
+import { getMercureHub }       from '../tools/mercure-hub.js';
+import { ChatController }       from '../controllers/chat-controller.js';
+import { TypingController }     from '../controllers/typing-controller.js';
+import { PeerPresenceWatcher }  from '../controllers/peer-presence-watcher.js';
 
 (function () {
     const messagesEl = document.getElementById('chat-messages');
@@ -11,17 +12,25 @@ import { PeerPresenceWatcher }    from '../controllers/peer-presence-watcher.js'
     const sendBtn   = document.getElementById('send-btn');
     const indicator = document.getElementById('typing-indicator');
 
-    const typing = new TypingController(messagesEl, textarea, indicator);
-    const chat   = new ChatController(messagesEl, () => typing.hide());
+    const hub    = getMercureHub(messagesEl.dataset.mercureUrl);
+    const typing = new TypingController(messagesEl, hub, textarea, indicator);
+    const chat   = new ChatController(messagesEl, hub, () => typing.hide());
 
-    if (messagesEl.dataset.presenceUrl) {
-        new PeerPresenceWatcher(messagesEl.dataset.presenceUrl, (status) => {
+    let watcher = null;
+    const otherId = messagesEl.dataset.otherId;
+    if (otherId) {
+        watcher = new PeerPresenceWatcher(hub).watch(otherId, (status) => {
             const dot   = document.getElementById('presence-dot');
             const label = document.getElementById('presence-label');
             if (dot)   dot.className = `presence-dot presence-dot--${status}`;
             if (label) label.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         });
     }
+
+    window.addEventListener('pagehide', () => {
+        watcher?.disconnect();
+        hub.close();
+    });
 
     messagesEl.scrollTop = messagesEl.scrollHeight;
 

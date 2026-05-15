@@ -1,48 +1,40 @@
-const TYPING_INTERVAL_MS = 2500;
-const INDICATOR_TTL_MS   = 3000;
+const TYPING_INTERVAL_MS = 2000;
+const INDICATOR_TTL_MS = 2000;
 
 export class TypingController {
-    #es         = null;
-    #interval   = null;  // repeating tick while user is typing
-    #lastKeyAt  = 0;     // timestamp of the most recent keypress
-    #hideTimer  = null;
+    #interval = null;
+    #lastKeyAt = 0;
+    #hideTimer = null;
     #postUrl;
     #csrfToken;
     #currentUser;
     #indicator;
+    #boundHandler;
+    #hub;
 
-    /**
-     * @param {HTMLElement} messagesEl  #chat-messages (carries data-* config)
-     * @param {HTMLElement} textarea    message input
-     * @param {HTMLElement} indicator   #typing-indicator display element
-     */
-    constructor(messagesEl, textarea, indicator) {
-        this.#postUrl     = messagesEl.dataset.typingPostUrl;
-        this.#csrfToken   = messagesEl.dataset.csrfTyping;
+    constructor(messagesEl, hub, textarea, indicator) {
+        this.#postUrl = messagesEl.dataset.typingPostUrl;
+        this.#csrfToken = messagesEl.dataset.csrfTyping;
         this.#currentUser = messagesEl.dataset.currentUser;
-        this.#indicator   = indicator;
+        this.#indicator = indicator;
+        this.#hub = hub;
 
-        this.#connect(messagesEl.dataset.typingUrl);
+        this.#boundHandler = (data) => this.#onMessage(data);
+        hub.on('typing', this.#boundHandler);
+
         textarea.addEventListener('input', () => this.#onInput());
-        window.addEventListener('pagehide', () => this.disconnect());
-    }
-
-    #connect(url) {
-        this.#es = new EventSource(url, { withCredentials: true });
-        this.#es.onmessage = (e) => this.#onMessage(e);
-        this.#es.onerror   = () => {};
     }
 
     #onInput() {
         this.#lastKeyAt = Date.now();
 
-        if (this.#interval !== null) return; // already ticking
+        if (this.#interval !== null) return;
 
-        this.#postTyping(); // immediate on first key
+        this.#postTyping();
 
         this.#interval = setInterval(() => {
-            if (Date.now() - this.#lastKeyAt >= TYPING_INTERVAL_MS) {
-                // No keypress in the last interval — user stopped typing
+            const diff = Date.now() - this.#lastKeyAt;
+            if (diff >= 500) {
                 clearInterval(this.#interval);
                 this.#interval = null;
             } else {
@@ -55,23 +47,14 @@ export class TypingController {
         const body = new FormData();
         body.set('_token', this.#csrfToken);
         try {
-            await fetch(this.#postUrl, { method: 'POST', body });
+            await fetch(this.#postUrl, {method: 'POST', body});
         } catch {
             // best-effort — silent on network failure
         }
     }
 
-    #onMessage(event) {
-        let data;
-        try {
-            data = JSON.parse(event.data);
-        } catch {
-            return;
-        }
-
-        if (data.type !== 'typing') return;
+    #onMessage(data) {
         if (data.senderUsername === this.#currentUser) return;
-
         this.#show(data.senderUsername);
     }
 
@@ -90,7 +73,6 @@ export class TypingController {
     disconnect() {
         clearInterval(this.#interval);
         clearTimeout(this.#hideTimer);
-        this.#es?.close();
-        this.#es = null;
+        this.#hub.off('typing', this.#boundHandler);
     }
 }

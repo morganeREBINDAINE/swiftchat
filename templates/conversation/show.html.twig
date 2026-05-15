@@ -61,9 +61,8 @@
 
         <div class="chat-messages"
              id="chat-messages"
-             data-mercure-url="{{ mercure('conversation/' ~ conversation.id) }}"
-             data-typing-url="{{ mercure('typing/' ~ conversation.id) }}"
-             data-presence-url="{{ mercure('presence/' ~ other.id) }}"
+             data-mercure-url="{{ mercure(['conversation/' ~ conversation.id, 'typing/' ~ conversation.id, 'presence/' ~ other.id]) }}"
+             data-other-id="{{ other.id }}"
              data-typing-post-url="{{ path('conversation_typing', {id: conversation.id}) }}"
              data-csrf-typing="{{ csrf_token('typing') }}"
              data-current-user="{{ app.user.username }}">
