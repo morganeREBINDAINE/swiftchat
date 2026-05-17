@@ -10,11 +10,13 @@ use Predis\Client;
 class PresenceRedisService
 {
     private const KEY_PATTERN = 'presence:%s';
-    private const ONLINE_SET  = 'presence:online_set';
-    private const TTL_ONLINE  = 90;   // seconds
-    private const TTL_AWAY    = 180;  // seconds
+    private const ONLINE_SET = 'presence:online_set';
+    private const TTL_ONLINE = 90;   // seconds
+    private const TTL_AWAY = 180;  // seconds
 
-    public function __construct(private readonly Client $redis) {}
+    public function __construct(private readonly Client $redis)
+    {
+    }
 
     /**
      * Stores presence in Redis with appropriate TTL and adds the user to the online set.
@@ -22,15 +24,13 @@ class PresenceRedisService
      */
     public function setPresence(string $userId, PresenceStatus $status): bool
     {
-        $key      = $this->key($userId);
+        $key = $this->key($userId);
         $previous = $this->redis->get($key);
 
         $ttl = match ($status) {
-            PresenceStatus::Online  => self::TTL_ONLINE,
-            PresenceStatus::Away    => self::TTL_AWAY,
-            PresenceStatus::Offline => throw new \InvalidArgumentException(
-                'Use removePresence() to mark a user offline.'
-            ),
+            PresenceStatus::Online => self::TTL_ONLINE,
+            PresenceStatus::Away => self::TTL_AWAY,
+            PresenceStatus::Offline => throw new \InvalidArgumentException('Use removePresence() to mark a user offline.'),
         };
 
         $this->redis->setex($key, $ttl, $status->value);
@@ -43,7 +43,7 @@ class PresenceRedisService
     {
         $value = $this->redis->get($this->key($userId));
 
-        return $value !== null ? PresenceStatus::from($value) : PresenceStatus::Offline;
+        return null !== $value ? PresenceStatus::from($value) : PresenceStatus::Offline;
     }
 
     /**
@@ -71,11 +71,11 @@ class PresenceRedisService
      */
     public function getStaleMemberIds(): array
     {
-        $ids   = $this->redis->smembers(self::ONLINE_SET) ?? [];
+        $ids = $this->redis->smembers(self::ONLINE_SET);
         $stale = [];
 
         foreach ($ids as $id) {
-            if ($this->redis->exists(sprintf(self::KEY_PATTERN, $id)) === 0) {
+            if (0 === $this->redis->exists(sprintf(self::KEY_PATTERN, $id))) {
                 $stale[] = $id;
             }
         }

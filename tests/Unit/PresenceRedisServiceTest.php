@@ -14,43 +14,63 @@ use Predis\Client;
  */
 final class FakeRedisClient extends Client
 {
+    /** @var array<string, string> */
     private array $strings = [];
-    private array $ttls    = [];
-    private array $sets    = [];
+    /** @var array<string, int> */
+    private array $ttls = [];
+    /** @var array<string, array<string, true>> */
+    private array $sets = [];
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
+    /** @param mixed[] $arguments */
     public function __call($command, $arguments): mixed
     {
         return match ($command) {
-            'get'      => $this->strings[$arguments[0]] ?? null,
-            'setex'    => $this->fakeSetex($arguments[0], $arguments[1], $arguments[2]),
-            'del'      => $this->fakeDel($arguments[0]),
-            'sadd'     => $this->fakeSadd($arguments[0], $arguments[1]),
-            'srem'     => $this->fakeSrem($arguments[0], $arguments[1]),
+            'get' => $this->strings[$arguments[0]] ?? null,
+            'setex' => $this->fakeSetex($arguments[0], $arguments[1], $arguments[2]),
+            'del' => $this->fakeDel($arguments[0]),
+            'sadd' => $this->fakeSadd($arguments[0], $arguments[1]),
+            'srem' => $this->fakeSrem($arguments[0], $arguments[1]),
             'smembers' => array_keys($this->sets[$arguments[0]] ?? []),
-            'exists'   => isset($this->strings[$arguments[0]]) ? 1 : 0,
-            default    => null,
+            'exists' => isset($this->strings[$arguments[0]]) ? 1 : 0,
+            default => null,
         };
     }
 
-    public function getString(string $key): ?string { return $this->strings[$key] ?? null; }
-    public function getTtl(string $key): ?int        { return $this->ttls[$key] ?? null; }
-    public function getSet(string $key): array       { return array_keys($this->sets[$key] ?? []); }
+    public function getString(string $key): ?string
+    {
+        return $this->strings[$key] ?? null;
+    }
+
+    public function getTtl(string $key): ?int
+    {
+        return $this->ttls[$key] ?? null;
+    }
+
+    /** @return string[] */
+    public function getSet(string $key): array
+    {
+        return array_keys($this->sets[$key] ?? []);
+    }
 
     private function fakeSetex(string $key, int $ttl, string $value): void
     {
         $this->strings[$key] = $value;
-        $this->ttls[$key]    = $ttl;
+        $this->ttls[$key] = $ttl;
     }
 
     private function fakeDel(string $key): int
     {
         $existed = array_key_exists($key, $this->strings);
         unset($this->strings[$key], $this->ttls[$key]);
+
         return $existed ? 1 : 0;
     }
 
+    /** @param string[] $members */
     private function fakeSadd(string $key, array $members): int
     {
         $added = 0;
@@ -60,6 +80,7 @@ final class FakeRedisClient extends Client
                 ++$added;
             }
         }
+
         return $added;
     }
 
@@ -67,6 +88,7 @@ final class FakeRedisClient extends Client
     {
         $existed = isset($this->sets[$key][$member]);
         unset($this->sets[$key][$member]);
+
         return $existed ? 1 : 0;
     }
 }
@@ -78,7 +100,7 @@ class PresenceRedisServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->redis   = new FakeRedisClient();
+        $this->redis = new FakeRedisClient();
         $this->service = new PresenceRedisService($this->redis);
     }
 

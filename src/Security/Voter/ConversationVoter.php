@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, Conversation> */
 final class ConversationVoter extends Voter
 {
     public const VIEW = 'CONVERSATION_VIEW';
@@ -29,7 +30,7 @@ final class ConversationVoter extends Voter
             return false;
         }
 
-        /** @var Conversation $subject */
+        /* @var Conversation $subject */
         return $subject->hasParticipant($user);
     }
 }

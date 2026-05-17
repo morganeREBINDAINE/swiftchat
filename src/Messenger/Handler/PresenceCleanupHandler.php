@@ -9,11 +9,9 @@ use App\Messenger\Message\PresenceCleanupMessage;
 use App\Service\PresenceRedisService;
 use App\Service\PresenceService;
 use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Monolog\Attribute\WithMonologChannel;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-#[WithMonologChannel('presence')]
 final class PresenceCleanupHandler
 {
     public function __construct(
@@ -26,7 +24,7 @@ final class PresenceCleanupHandler
     public function __invoke(PresenceCleanupMessage $message): void
     {
         $cleaned = 0;
-        $failed  = 0;
+        $failed = 0;
 
         try {
             $stale = $this->presenceRedis->getStaleMemberIds();
@@ -46,7 +44,7 @@ final class PresenceCleanupHandler
             } catch (\Throwable $e) {
                 $this->logger->error('Failed to clean up presence entry', [
                     'user_id' => $id,
-                    'error'   => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
                 ++$failed;
             }
@@ -54,7 +52,7 @@ final class PresenceCleanupHandler
 
         $this->logger->info('Presence cleanup completed', [
             'cleaned' => $cleaned,
-            'failed'  => $failed,
+            'failed' => $failed,
         ]);
     }
 }

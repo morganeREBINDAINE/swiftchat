@@ -38,13 +38,13 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $charlie = $userRepo->findByUsername('charlie');
 
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $client->loginUser($charlie);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages');
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
@@ -56,11 +56,11 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages');
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages');
 
         $this->assertResponseIsSuccessful();
         $this->assertSame([], json_decode($client->getResponse()->getContent(), true));
@@ -73,13 +73,13 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $this->seedMessages($conversation, $alice, ['first', 'second', 'third']);
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages');
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages');
 
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -98,14 +98,14 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $messages = $this->seedMessages($conversation, $alice, ['msg-1', 'msg-2', 'msg-3', 'msg-4', 'msg-5']);
         $cursor = $messages[2]->getId()->toRfc4122(); // before msg-3
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages?before=' . $cursor);
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages?before='.$cursor);
 
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -125,14 +125,14 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $messages = $this->seedMessages($conversation, $alice, ['a', 'b', 'c', 'd', 'e']);
         $cursor = $messages[4]->getId()->toRfc4122(); // before e → expect a, b, c, d
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages?before=' . $cursor);
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages?before='.$cursor);
 
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -147,11 +147,11 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages?before=not-a-uuid');
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages?before=not-a-uuid');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -165,13 +165,13 @@ class ConversationMessagesTest extends WebTestCase
         $userRepo = $container->get(UserRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
+        $bob = $userRepo->findByUsername('bob');
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $this->seedMessages($conversation, $alice, ['hello']);
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages');
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages');
 
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -187,7 +187,10 @@ class ConversationMessagesTest extends WebTestCase
         );
     }
 
-    /** @return Message[] */
+    /**
+     * @param string[] $contents
+     * @return Message[]
+     */
     private function seedMessages(Conversation $conversation, mixed $sender, array $contents): array
     {
         $em = static::getContainer()->get(EntityManagerInterface::class);
