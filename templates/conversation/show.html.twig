@@ -35,7 +35,10 @@
         </div>
         <div class="sidebar__list">
             <a href="{{ path('conversation_list') }}" class="conv-item">
-                <div class="conv-item__name" style="color:#6366f1;">← All conversations</div>
+                <div class="conv-item__name" style="color:#6366f1; display:flex; align-items:center; gap:.4rem;">
+                    ← All conversations
+                    <span id="other-unread-badge" class="unread-badge unread-badge--hidden"></span>
+                </div>
             </a>
             <div class="conv-item conv-item--active">
                 <div class="conv-item__name" style="display:flex; align-items:center; gap:.4rem;">
@@ -61,7 +64,8 @@
 
         <div class="chat-messages"
              id="chat-messages"
-             data-mercure-url="{{ mercure(['conversation/' ~ conversation.id, 'typing/' ~ conversation.id, 'presence/' ~ other.id]) }}"
+             data-mercure-url="{{ mercure(mercureTopics) }}"
+             data-conversation-id="{{ conversation.id }}"
              data-other-id="{{ other.id }}"
              data-typing-post-url="{{ path('conversation_typing', {id: conversation.id}) }}"
              data-csrf-typing="{{ csrf_token('typing') }}"
@@ -102,5 +106,5 @@
     </div>
 </div>
 
-{% block importmap %}{{ importmap(['app', 'chat']) }}{% endblock %}
+{% block importmap %}{{ importmap(['app', 'chat', 'conversations']) }}{% endblock %}
 {% endblock %}

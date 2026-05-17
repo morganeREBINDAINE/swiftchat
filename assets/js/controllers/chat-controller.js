@@ -1,34 +1,26 @@
 import { escapeHtml } from '../tools/escape-html.js';
 
 export class ChatController {
-    #es = null;
     #messagesEl;
     #onReceiveMessage;
     #currentUser;
+    #conversationId;
+    #hub;
+    #boundHandler;
 
-    constructor(messagesEl, onReceiveMessage) {
-        this.#messagesEl  = messagesEl;
-        this.#onReceiveMessage  = onReceiveMessage;
-        this.#currentUser = messagesEl.dataset.currentUser;
-        this.#connect(messagesEl.dataset.mercureUrl);
-        window.addEventListener('pagehide', () => this.disconnect());
+    constructor(messagesEl, hub, onReceiveMessage) {
+        this.#messagesEl      = messagesEl;
+        this.#hub             = hub;
+        this.#onReceiveMessage = onReceiveMessage;
+        this.#currentUser     = messagesEl.dataset.currentUser;
+        this.#conversationId  = messagesEl.dataset.conversationId;
+
+        this.#boundHandler = (data) => this.#onMessage(data);
+        hub.on('new_message', this.#boundHandler);
     }
 
-    #connect(url) {
-        this.#es = new EventSource(url, { withCredentials: true });
-        this.#es.onmessage = (e) => this.#onMessage(e);
-        this.#es.onerror = () => {};
-    }
-
-    #onMessage(event) {
-        let data;
-        try {
-            data = JSON.parse(event.data);
-        } catch {
-            return;
-        }
-
-        if (data.type !== 'new_message') return;
+    #onMessage(data) {
+        if (data.conversationId !== this.#conversationId) return;
         if (data.senderUsername === this.#currentUser) return;
 
         this.#onReceiveMessage();
@@ -57,7 +49,6 @@ export class ChatController {
     }
 
     disconnect() {
-        this.#es?.close();
-        this.#es = null;
+        this.#hub.off('new_message', this.#boundHandler);
     }
 }

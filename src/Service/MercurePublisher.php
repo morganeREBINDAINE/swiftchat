@@ -53,6 +53,23 @@ class MercurePublisher
         $this->hub->publish($update);
     }
 
+    public function publishReadStatus(Conversation $conversation, User $reader): void
+    {
+        $topic = sprintf('conversation/%s', $conversation->getId()->toRfc4122());
+
+        $update = new Update(
+            topics: $topic,
+            data: json_encode([
+                'type'           => 'messages_read',
+                'conversationId' => $conversation->getId()->toRfc4122(),
+                'readerUsername' => $reader->getUsername(),
+            ], JSON_THROW_ON_ERROR),
+            private: true,
+        );
+
+        $this->hub->publish($update);
+    }
+
     public function publishPresence(string $userId, PresenceStatus $status): void
     {
         $topic = sprintf('presence/%s', $userId);

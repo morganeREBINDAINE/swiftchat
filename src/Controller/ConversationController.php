@@ -37,7 +37,7 @@ class ConversationController extends AbstractController
     ) {}
 
     #[Route('/conversations', name: 'conversation_list', methods: ['GET'])]
-    public function list(ConversationRepository $convRepo, MessageRepository $messageRepo): Response
+    public function list(Request $request, ConversationRepository $convRepo, MessageRepository $messageRepo): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -45,17 +45,25 @@ class ConversationController extends AbstractController
         $conversations = $convRepo->findForUser($user);
 
         $presenceMap = [];
+        $mercureTopics = [];
         foreach ($conversations as $conv) {
             $otherId               = $conv->getOtherParticipant($user)->getId()->toRfc4122();
             $presenceMap[$otherId] = $this->presenceRedis->getPresence($otherId)->value;
+            $mercureTopics[]       = 'conversation/' . $conv->getId()->toRfc4122();
+            $mercureTopics[]       = 'presence/' . $otherId;
+        }
+
+        if ($mercureTopics !== []) {
+            $this->mercureAuthorization->setCookie($request, $mercureTopics);
         }
 
         $unreadMap = $messageRepo->countUnreadPerConversation($conversations, $user);
 
         return $this->render('conversation/list.html.twig', [
-            'conversations' => $conversations,
-            'presenceMap'   => $presenceMap,
-            'unreadMap'     => $unreadMap,
+            'conversations'  => $conversations,
+            'presenceMap'    => $presenceMap,
+            'unreadMap'      => $unreadMap,
+            'mercureTopics'  => $mercureTopics,
         ]);
     }
 
@@ -132,7 +140,9 @@ class ConversationController extends AbstractController
 
         $count = $messageRepo->markAllAsReadBy($conversation, $user);
 
-        // MercurePublisher::publishReadStatus() will be wired here in Phase 3
+        if ($count > 0) {
+            $this->mercurePublisher->publishReadStatus($conversation, $user);
+        }
 
         return $this->json(['markedCount' => $count]);
     }
@@ -230,13 +240,22 @@ class ConversationController extends AbstractController
         $other   = $conversation->getOtherParticipant($user);
         $otherId = $other->getId()->toRfc4122();
 
-        $this->mercureAuthorization->setCookie($request, [
-            'conversation/' . $convId,
-            'typing/'        . $convId,
-            'presence/'      . $otherId,
-        ]);
+        $allConversations = $convRepo->findForUser($user);
 
-        $messageRepo->markAllAsReadBy($conversation, $user);
+        $mercureTopics = array_map(
+            static fn(Conversation $c) => 'conversation/' . $c->getId()->toRfc4122(),
+            $allConversations,
+        );
+        $mercureTopics[] = 'typing/'    . $convId;
+        $mercureTopics[] = 'presence/'  . $otherId;
+
+        $this->mercureAuthorization->setCookie($request, $mercureTopics);
+
+        $markedCount = $messageRepo->markAllAsReadBy($conversation, $user);
+
+        if ($markedCount > 0) {
+            $this->mercurePublisher->publishReadStatus($conversation, $user);
+        }
 
         $messages = $messageRepo->findByConversation($conversation);
 
@@ -245,6 +264,7 @@ class ConversationController extends AbstractController
             'messages'       => $messages,
             'other'          => $other,
             'otherPresence'  => $this->presenceRedis->getPresence($otherId)->value,
+            'mercureTopics'  => $mercureTopics,
         ]);
     }
 }

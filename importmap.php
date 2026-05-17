@@ -20,4 +20,8 @@ return [
         'path' => './assets/js/pages/chat.js',
         'entrypoint' => true,
     ],
+    'conversations' => [
+        'path' => './assets/js/pages/conversations.js',
+        'entrypoint' => true,
+    ],
 ];
