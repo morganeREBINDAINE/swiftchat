@@ -7,16 +7,19 @@ export class ChatController {
     #conversationId;
     #hub;
     #boundHandler;
+    #boundReadHandler;
 
     constructor(messagesEl, hub, onReceiveMessage) {
-        this.#messagesEl      = messagesEl;
-        this.#hub             = hub;
+        this.#messagesEl       = messagesEl;
+        this.#hub              = hub;
         this.#onReceiveMessage = onReceiveMessage;
-        this.#currentUser     = messagesEl.dataset.currentUser;
-        this.#conversationId  = messagesEl.dataset.conversationId;
+        this.#currentUser      = messagesEl.dataset.currentUser;
+        this.#conversationId   = messagesEl.dataset.conversationId;
 
-        this.#boundHandler = (data) => this.#onMessage(data);
-        hub.on('new_message', this.#boundHandler);
+        this.#boundHandler     = (data) => this.#onMessage(data);
+        this.#boundReadHandler = (data) => this.#onMessagesRead(data);
+        hub.on('new_message',   this.#boundHandler);
+        hub.on('messages_read', this.#boundReadHandler);
     }
 
     #onMessage(data) {
@@ -26,6 +29,18 @@ export class ChatController {
         this.#onReceiveMessage();
         this.#removeEmptyState();
         this.#appendBubble(data.content, data.senderUsername, data.createdAt, false);
+    }
+
+    #onMessagesRead(data) {
+        if (data.conversationId !== this.#conversationId) return;
+        if (data.readerUsername === this.#currentUser) return;
+
+        this.#messagesEl.querySelectorAll('.message--mine .message__meta').forEach((el) => {
+            const t = el.textContent;
+            if (t.includes('✓') && !t.includes('✓✓')) {
+                el.textContent = t.replace('✓', '✓✓');
+            }
+        });
     }
 
     appendOwn(content, createdAt) {
@@ -49,6 +64,7 @@ export class ChatController {
     }
 
     disconnect() {
-        this.#hub.off('new_message', this.#boundHandler);
+        this.#hub.off('new_message',   this.#boundHandler);
+        this.#hub.off('messages_read', this.#boundReadHandler);
     }
 }
