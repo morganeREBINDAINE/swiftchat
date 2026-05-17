@@ -6,6 +6,7 @@ export class ChatController {
     #currentUser;
     #conversationId;
     #hub;
+    #markReadUrl;
     #boundHandler;
     #boundReadHandler;
 
@@ -15,6 +16,7 @@ export class ChatController {
         this.#onReceiveMessage = onReceiveMessage;
         this.#currentUser      = messagesEl.dataset.currentUser;
         this.#conversationId   = messagesEl.dataset.conversationId;
+        this.#markReadUrl      = messagesEl.dataset.markReadUrl;
 
         this.#boundHandler     = (data) => this.#onMessage(data);
         this.#boundReadHandler = (data) => this.#onMessagesRead(data);
@@ -29,6 +31,7 @@ export class ChatController {
         this.#onReceiveMessage();
         this.#removeEmptyState();
         this.#appendBubble(data.content, data.senderUsername, data.createdAt, false);
+        fetch(this.#markReadUrl, { method: 'PATCH' });
     }
 
     #onMessagesRead(data) {

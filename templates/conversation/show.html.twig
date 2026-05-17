@@ -67,6 +67,7 @@
              data-mercure-url="{{ mercure(mercureTopics) }}"
              data-conversation-id="{{ conversation.id }}"
              data-other-id="{{ other.id }}"
+             data-mark-read-url="{{ path('conversation_mark_read', {id: conversation.id}) }}"
              data-typing-post-url="{{ path('conversation_typing', {id: conversation.id}) }}"
              data-csrf-typing="{{ csrf_token('typing') }}"
              data-current-user="{{ app.user.username }}">
