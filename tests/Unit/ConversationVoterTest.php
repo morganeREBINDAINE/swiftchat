@@ -106,7 +106,7 @@ class ConversationVoterTest extends TestCase
     private function makeConversation(): array
     {
         $alice = $this->makeUser();
-        $bob   = $this->makeUser();
+        $bob = $this->makeUser();
 
         return [$alice, $bob, new Conversation($alice, $bob)];
     }
@@ -114,8 +114,8 @@ class ConversationVoterTest extends TestCase
     private function makeUser(): User
     {
         $user = new User();
-        $user->setUsername('user_' . uniqid());
-        $user->setEmail(uniqid() . '@example.com');
+        $user->setUsername('user_'.uniqid());
+        $user->setEmail(uniqid().'@example.com');
         $user->setPassword('hashed');
 
         return $user;

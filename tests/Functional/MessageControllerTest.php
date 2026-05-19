@@ -22,7 +22,7 @@ class MessageControllerTest extends WebTestCase
     private function openConversation(KernelBrowser $client, string $asUsername, string $otherUsername): array
     {
         $userRepo = static::getContainer()->get(UserRepository::class);
-        $user  = $userRepo->findByUsername($asUsername);
+        $user = $userRepo->findByUsername($asUsername);
         $other = $userRepo->findByUsername($otherUsername);
 
         $conversation = static::getContainer()
@@ -30,7 +30,7 @@ class MessageControllerTest extends WebTestCase
             ->findOrCreate($user, $other);
 
         $client->loginUser($user);
-        $crawler = $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122());
+        $crawler = $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122());
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         return [$conversation, $token];
@@ -50,7 +50,7 @@ class MessageControllerTest extends WebTestCase
         $client->loginUser($alice);
 
         $client->request('POST', '/conversations/00000000-0000-7000-8000-000000000000/messages', [
-            '_token'  => 'bad-token',
+            '_token' => 'bad-token',
             'content' => 'Hello',
         ]);
 
@@ -65,7 +65,7 @@ class MessageControllerTest extends WebTestCase
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
         $client->request('POST', '/conversations/not-a-valid-uuid/messages', [
-            '_token'  => $token,
+            '_token' => $token,
             'content' => 'Hello',
         ]);
 
@@ -80,7 +80,7 @@ class MessageControllerTest extends WebTestCase
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
         $client->request('POST', '/conversations/00000000-0000-7000-8000-000000000000/messages', [
-            '_token'  => $token,
+            '_token' => $token,
             'content' => 'Hello',
         ]);
 
@@ -93,23 +93,23 @@ class MessageControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $container = static::getContainer();
-        $userRepo  = $container->get(UserRepository::class);
+        $userRepo = $container->get(UserRepository::class);
 
-        $alice   = $userRepo->findByUsername('alice');
-        $bob     = $userRepo->findByUsername('bob');
+        $alice = $userRepo->findByUsername('alice');
+        $bob = $userRepo->findByUsername('bob');
         $charlie = $userRepo->findByUsername('charlie');
 
-        $aliceBob     = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $aliceBob = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
         $charlieAlice = $container->get(ConversationService::class)->findOrCreate($charlie, $alice);
 
         // Charlie gets a valid send_message CSRF token from their own conversation show page
         $client->loginUser($charlie);
-        $crawler = $client->request('GET', '/conversations/' . $charlieAlice->getId()->toRfc4122());
+        $crawler = $client->request('GET', '/conversations/'.$charlieAlice->getId()->toRfc4122());
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         // Charlie tries to post into alice–bob's conversation
-        $client->request('POST', '/conversations/' . $aliceBob->getId()->toRfc4122() . '/messages', [
-            '_token'  => $token,
+        $client->request('POST', '/conversations/'.$aliceBob->getId()->toRfc4122().'/messages', [
+            '_token' => $token,
             'content' => 'Hello',
         ]);
 
@@ -121,8 +121,8 @@ class MessageControllerTest extends WebTestCase
         $client = static::createClient();
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
-        $client->request('POST', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages', [
-            '_token'  => $token,
+        $client->request('POST', '/conversations/'.$conversation->getId()->toRfc4122().'/messages', [
+            '_token' => $token,
             'content' => '   ',
         ]);
 
@@ -136,8 +136,8 @@ class MessageControllerTest extends WebTestCase
         $client = static::createClient();
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
-        $client->request('POST', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages', [
-            '_token'  => $token,
+        $client->request('POST', '/conversations/'.$conversation->getId()->toRfc4122().'/messages', [
+            '_token' => $token,
             'content' => str_repeat('a', 5001),
         ]);
 
@@ -151,8 +151,8 @@ class MessageControllerTest extends WebTestCase
         $client = static::createClient();
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
-        $client->request('POST', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages', [
-            '_token'  => $token,
+        $client->request('POST', '/conversations/'.$conversation->getId()->toRfc4122().'/messages', [
+            '_token' => $token,
             'content' => 'Hello, Bob!',
         ]);
 
@@ -173,8 +173,8 @@ class MessageControllerTest extends WebTestCase
         $client = static::createClient();
         [$conversation, $token] = $this->openConversation($client, 'alice', 'bob');
 
-        $client->request('POST', '/conversations/' . $conversation->getId()->toRfc4122() . '/messages', [
-            '_token'  => $token,
+        $client->request('POST', '/conversations/'.$conversation->getId()->toRfc4122().'/messages', [
+            '_token' => $token,
             'content' => '<script>alert(1)</script>',
         ]);
 

@@ -7,9 +7,9 @@ namespace App\Repository;
 use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Entity\User;
-use Symfony\Component\Uid\Uuid;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Message>
@@ -74,11 +74,12 @@ class MessageRepository extends ServiceEntityRepository
 
     /**
      * @param Conversation[] $conversations
+     *
      * @return array<string, int> keyed by conversation UUID (RFC4122), default 0
      */
     public function countUnreadPerConversation(array $conversations, User $user): array
     {
-        if ($conversations === []) {
+        if ([] === $conversations) {
             return [];
         }
 

@@ -20,7 +20,8 @@ class AppFixtures extends Fixture
 
     public function __construct(
         private readonly UserPasswordHasherInterface $hasher,
-    ) {}
+    ) {
+    }
 
     public function load(ObjectManager $manager): void
     {

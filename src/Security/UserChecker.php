@@ -19,11 +19,11 @@ class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->isVerified()) {
-            throw new CustomUserMessageAuthenticationException(
-                'Please verify your email address before logging in.'
-            );
+            throw new CustomUserMessageAuthenticationException('Please verify your email address before logging in.');
         }
     }
 
-    public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void {}
+    public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
+    {
+    }
 }

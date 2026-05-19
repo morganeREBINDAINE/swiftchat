@@ -25,7 +25,8 @@ class PresenceController extends AbstractController
         private readonly PresenceService $presenceService,
         #[Autowire(service: 'limiter.heartbeat')]
         private readonly RateLimiterFactory $heartbeatLimiter,
-    ) {}
+    ) {
+    }
 
     #[Route('/presence/heartbeat', name: 'presence_heartbeat', methods: ['POST'])]
     public function heartbeat(Request $request): JsonResponse
@@ -43,11 +44,11 @@ class PresenceController extends AbstractController
         }
 
         $status = match ($request->request->getString('status')) {
-            'away'  => PresenceStatus::Away,
+            'away' => PresenceStatus::Away,
             default => PresenceStatus::Online,
         };
 
-        $userId  = $user->getId()->toRfc4122();
+        $userId = $user->getId()->toRfc4122();
         $changed = $this->presenceRedis->setPresence($userId, $status);
 
         if ($changed) {

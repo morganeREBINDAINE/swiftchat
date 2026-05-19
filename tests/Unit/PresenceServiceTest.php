@@ -18,7 +18,7 @@ class PresenceServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->publisher = $this->createMock(MercurePublisher::class);
-        $this->service   = new PresenceService($this->publisher);
+        $this->service = new PresenceService($this->publisher);
     }
 
     public function testUpdateStatusPublishesOnlineToMercure(): void

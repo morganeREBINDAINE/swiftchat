@@ -21,11 +21,11 @@ class MessageRepositoryTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
-        $container       = static::getContainer();
-        $this->em          = $container->get(EntityManagerInterface::class);
-        $this->repo        = $container->get(MessageRepository::class);
+        $container = static::getContainer();
+        $this->em = $container->get(EntityManagerInterface::class);
+        $this->repo = $container->get(MessageRepository::class);
         $this->convService = $container->get(ConversationService::class);
-        $this->userRepo    = $container->get(UserRepository::class);
+        $this->userRepo = $container->get(UserRepository::class);
     }
 
     public function testEmptyArrayReturnsEmptyMap(): void
@@ -38,8 +38,8 @@ class MessageRepositoryTest extends KernelTestCase
     public function testConversationWithNoMessagesReturnsZero(): void
     {
         $alice = $this->userRepo->findByUsername('alice');
-        $bob   = $this->userRepo->findByUsername('bob');
-        $conv  = $this->convService->findOrCreate($alice, $bob);
+        $bob = $this->userRepo->findByUsername('bob');
+        $conv = $this->convService->findOrCreate($alice, $bob);
 
         $result = $this->repo->countUnreadPerConversation([$conv], $alice);
 
@@ -50,8 +50,8 @@ class MessageRepositoryTest extends KernelTestCase
     public function testCountsUnreadMessagesFromOtherParticipant(): void
     {
         $alice = $this->userRepo->findByUsername('alice');
-        $bob   = $this->userRepo->findByUsername('bob');
-        $conv  = $this->convService->findOrCreate($alice, $bob);
+        $bob = $this->userRepo->findByUsername('bob');
+        $conv = $this->convService->findOrCreate($alice, $bob);
         $convId = $conv->getId()->toRfc4122();
 
         $before = $this->repo->countUnreadPerConversation([$conv], $alice)[$convId];
@@ -68,8 +68,8 @@ class MessageRepositoryTest extends KernelTestCase
     public function testDoesNotCountReadMessages(): void
     {
         $alice = $this->userRepo->findByUsername('alice');
-        $bob   = $this->userRepo->findByUsername('bob');
-        $conv  = $this->convService->findOrCreate($alice, $bob);
+        $bob = $this->userRepo->findByUsername('bob');
+        $conv = $this->convService->findOrCreate($alice, $bob);
         $convId = $conv->getId()->toRfc4122();
 
         $before = $this->repo->countUnreadPerConversation([$conv], $alice)[$convId];
@@ -87,8 +87,8 @@ class MessageRepositoryTest extends KernelTestCase
     public function testDoesNotCountOwnSentMessages(): void
     {
         $alice = $this->userRepo->findByUsername('alice');
-        $bob   = $this->userRepo->findByUsername('bob');
-        $conv  = $this->convService->findOrCreate($alice, $bob);
+        $bob = $this->userRepo->findByUsername('bob');
+        $conv = $this->convService->findOrCreate($alice, $bob);
         $convId = $conv->getId()->toRfc4122();
 
         $before = $this->repo->countUnreadPerConversation([$conv], $alice)[$convId];
@@ -103,17 +103,17 @@ class MessageRepositoryTest extends KernelTestCase
 
     public function testReturnsCorrectCountsForMultipleConversations(): void
     {
-        $alice   = $this->userRepo->findByUsername('alice');
-        $bob     = $this->userRepo->findByUsername('bob');
+        $alice = $this->userRepo->findByUsername('alice');
+        $bob = $this->userRepo->findByUsername('bob');
         $charlie = $this->userRepo->findByUsername('charlie');
 
-        $aliceBob     = $this->convService->findOrCreate($alice, $bob);
+        $aliceBob = $this->convService->findOrCreate($alice, $bob);
         $aliceCharlie = $this->convService->findOrCreate($alice, $charlie);
 
-        $bobId     = $aliceBob->getId()->toRfc4122();
+        $bobId = $aliceBob->getId()->toRfc4122();
         $charlieId = $aliceCharlie->getId()->toRfc4122();
 
-        $beforeBob     = $this->repo->countUnreadPerConversation([$aliceBob], $alice)[$bobId];
+        $beforeBob = $this->repo->countUnreadPerConversation([$aliceBob], $alice)[$bobId];
         $beforeCharlie = $this->repo->countUnreadPerConversation([$aliceCharlie], $alice)[$charlieId];
 
         $this->em->persist(new Message($aliceBob, $bob, 'Hello Alice'));

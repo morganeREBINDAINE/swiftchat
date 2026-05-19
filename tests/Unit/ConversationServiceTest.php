@@ -22,14 +22,14 @@ class ConversationServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(ConversationRepository::class);
-        $this->em         = $this->createMock(EntityManagerInterface::class);
-        $this->service    = new ConversationService($this->repository, $this->em);
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->service = new ConversationService($this->repository, $this->em);
     }
 
     public function testReturnsExistingConversation(): void
     {
         $alice = $this->makeUser();
-        $bob   = $this->makeUser();
+        $bob = $this->makeUser();
 
         $existing = new Conversation($alice, $bob);
 
@@ -50,7 +50,7 @@ class ConversationServiceTest extends TestCase
     public function testCreatesNewConversationWhenNoneExists(): void
     {
         $alice = $this->makeUser();
-        $bob   = $this->makeUser();
+        $bob = $this->makeUser();
 
         $this->repository
             ->expects($this->once())
@@ -72,7 +72,7 @@ class ConversationServiceTest extends TestCase
     public function testParticipantOrderIsNormalisedByUuid(): void
     {
         $alice = $this->makeUser();
-        $bob   = $this->makeUser();
+        $bob = $this->makeUser();
 
         // Determine which UUID is smaller (will become participant1)
         $aliceFirst = strcmp(
@@ -88,9 +88,9 @@ class ConversationServiceTest extends TestCase
 
         if ($aliceFirst) {
             $this->assertSame($alice, $result->getParticipant1());
-            $this->assertSame($bob,   $result->getParticipant2());
+            $this->assertSame($bob, $result->getParticipant2());
         } else {
-            $this->assertSame($bob,   $result->getParticipant1());
+            $this->assertSame($bob, $result->getParticipant1());
             $this->assertSame($alice, $result->getParticipant2());
         }
     }
@@ -98,7 +98,7 @@ class ConversationServiceTest extends TestCase
     public function testNormalisationIsSymmetric(): void
     {
         $alice = $this->makeUser();
-        $bob   = $this->makeUser();
+        $bob = $this->makeUser();
 
         $this->repository->expects($this->exactly(2))->method('findBetween')->willReturn(null);
         $this->em->expects($this->exactly(2))->method('persist')->with($this->isInstanceOf(Conversation::class));
@@ -114,8 +114,8 @@ class ConversationServiceTest extends TestCase
     private function makeUser(): User
     {
         $user = new User();
-        $user->setUsername('user_' . substr(Uuid::v7()->toRfc4122(), 0, 8));
-        $user->setEmail(Uuid::v7()->toRfc4122() . '@example.com');
+        $user->setUsername('user_'.substr(Uuid::v7()->toRfc4122(), 0, 8));
+        $user->setEmail(Uuid::v7()->toRfc4122().'@example.com');
         $user->setPassword('hashed');
 
         return $user;

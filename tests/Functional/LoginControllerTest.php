@@ -38,9 +38,9 @@ class LoginControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/login');
 
         $client->submit($crawler->selectButton('Log in')->form([
-            '_username'     => 'alice@swiftchat.app',
-            '_password'     => 'Password1!',
-            '_remember_me'  => true,
+            '_username' => 'alice@swiftchat.app',
+            '_password' => 'Password1!',
+            '_remember_me' => true,
         ]));
 
         $this->assertResponseRedirects('/profile');

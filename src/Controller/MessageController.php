@@ -27,7 +27,8 @@ class MessageController extends AbstractController
         private readonly MercurePublisher $mercurePublisher,
         #[Autowire(service: 'limiter.send_message')]
         private readonly RateLimiterFactory $sendMessageLimiter,
-    ) {}
+    ) {
+    }
 
     #[Route('/conversations/{id}/messages', name: 'message_send', methods: ['POST'])]
     public function send(string $id, Request $request, ConversationRepository $convRepo): JsonResponse
@@ -61,7 +62,7 @@ class MessageController extends AbstractController
 
         $content = trim($request->request->getString('content'));
 
-        if ($content === '') {
+        if ('' === $content) {
             return $this->json(['error' => 'Message content cannot be empty.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -80,10 +81,10 @@ class MessageController extends AbstractController
         // Messenger dispatch(NotifyUnreadMessageMessage) will be wired here in Phase 4
 
         return $this->json([
-            'id'        => $message->getId()->toRfc4122(),
-            'content'   => $message->getContent(),
+            'id' => $message->getId()->toRfc4122(),
+            'content' => $message->getContent(),
             'createdAt' => $message->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            'sender'    => $user->getUsername(),
+            'sender' => $user->getUsername(),
         ], Response::HTTP_CREATED);
     }
 }

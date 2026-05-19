@@ -34,7 +34,8 @@ class ConversationController extends AbstractController
         private readonly RateLimiterFactory $markReadLimiter,
         #[Autowire(service: 'limiter.typing')]
         private readonly RateLimiterFactory $typingLimiter,
-    ) {}
+    ) {
+    }
 
     #[Route('/conversations', name: 'conversation_list', methods: ['GET'])]
     public function list(Request $request, ConversationRepository $convRepo, MessageRepository $messageRepo): Response
@@ -47,23 +48,23 @@ class ConversationController extends AbstractController
         $presenceMap = [];
         $mercureTopics = [];
         foreach ($conversations as $conv) {
-            $otherId               = $conv->getOtherParticipant($user)->getId()->toRfc4122();
+            $otherId = $conv->getOtherParticipant($user)->getId()->toRfc4122();
             $presenceMap[$otherId] = $this->presenceRedis->getPresence($otherId)->value;
-            $mercureTopics[]       = 'conversation/' . $conv->getId()->toRfc4122();
-            $mercureTopics[]       = 'presence/' . $otherId;
+            $mercureTopics[] = 'conversation/'.$conv->getId()->toRfc4122();
+            $mercureTopics[] = 'presence/'.$otherId;
         }
 
-        if ($mercureTopics !== []) {
+        if ([] !== $mercureTopics) {
             $this->mercureAuthorization->setCookie($request, $mercureTopics);
         }
 
         $unreadMap = $messageRepo->countUnreadPerConversation($conversations, $user);
 
         return $this->render('conversation/list.html.twig', [
-            'conversations'  => $conversations,
-            'presenceMap'    => $presenceMap,
-            'unreadMap'      => $unreadMap,
-            'mercureTopics'  => $mercureTopics,
+            'conversations' => $conversations,
+            'presenceMap' => $presenceMap,
+            'unreadMap' => $unreadMap,
+            'mercureTopics' => $mercureTopics,
         ]);
     }
 
@@ -85,7 +86,7 @@ class ConversationController extends AbstractController
 
             $username = trim($request->request->getString('username'));
 
-            if ($username === '') {
+            if ('' === $username) {
                 $this->addFlash('error', 'Please enter a username.');
 
                 return $this->redirectToRoute('conversation_new');
@@ -99,7 +100,7 @@ class ConversationController extends AbstractController
 
             $other = $userRepo->findByUsername($username);
 
-            if ($other === null) {
+            if (null === $other) {
                 $this->addFlash('error', sprintf('No user found with username "%s".', $username));
 
                 return $this->redirectToRoute('conversation_new');
@@ -164,7 +165,7 @@ class ConversationController extends AbstractController
 
         $beforeParam = $request->query->getString('before');
 
-        if ($beforeParam !== '') {
+        if ('' !== $beforeParam) {
             try {
                 $beforeId = Uuid::fromString($beforeParam);
             } catch (\Throwable) {
@@ -176,11 +177,11 @@ class ConversationController extends AbstractController
         }
 
         return $this->json(array_map(
-            static fn(Message $m) => [
-                'id'        => $m->getId()->toRfc4122(),
-                'content'   => $m->getContent(),
+            static fn (Message $m) => [
+                'id' => $m->getId()->toRfc4122(),
+                'content' => $m->getContent(),
                 'createdAt' => $m->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'sender'    => $m->getSender()->getUsername(),
+                'sender' => $m->getSender()->getUsername(),
             ],
             $messages,
         ));
@@ -236,18 +237,18 @@ class ConversationController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $convId  = $conversation->getId()->toRfc4122();
-        $other   = $conversation->getOtherParticipant($user);
+        $convId = $conversation->getId()->toRfc4122();
+        $other = $conversation->getOtherParticipant($user);
         $otherId = $other->getId()->toRfc4122();
 
         $allConversations = $convRepo->findForUser($user);
 
         $mercureTopics = array_map(
-            static fn(Conversation $c) => 'conversation/' . $c->getId()->toRfc4122(),
+            static fn (Conversation $c) => 'conversation/'.$c->getId()->toRfc4122(),
             $allConversations,
         );
-        $mercureTopics[] = 'typing/'    . $convId;
-        $mercureTopics[] = 'presence/'  . $otherId;
+        $mercureTopics[] = 'typing/'.$convId;
+        $mercureTopics[] = 'presence/'.$otherId;
 
         $this->mercureAuthorization->setCookie($request, $mercureTopics);
 
@@ -260,11 +261,11 @@ class ConversationController extends AbstractController
         $messages = $messageRepo->findByConversation($conversation);
 
         return $this->render('conversation/show.html.twig', [
-            'conversation'   => $conversation,
-            'messages'       => $messages,
-            'other'          => $other,
-            'otherPresence'  => $this->presenceRedis->getPresence($otherId)->value,
-            'mercureTopics'  => $mercureTopics,
+            'conversation' => $conversation,
+            'messages' => $messages,
+            'other' => $other,
+            'otherPresence' => $this->presenceRedis->getPresence($otherId)->value,
+            'mercureTopics' => $mercureTopics,
         ]);
     }
 }

@@ -50,7 +50,7 @@ class ConversationControllerTest extends WebTestCase
         $client->loginUser($alice);
 
         $client->request('POST', '/conversations/new', [
-            '_token'   => 'bad-token',
+            '_token' => 'bad-token',
             'username' => 'bob',
         ]);
 
@@ -69,7 +69,7 @@ class ConversationControllerTest extends WebTestCase
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/conversations/new', [
-            '_token'   => $token,
+            '_token' => $token,
             'username' => '   ',
         ]);
 
@@ -88,7 +88,7 @@ class ConversationControllerTest extends WebTestCase
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/conversations/new', [
-            '_token'   => $token,
+            '_token' => $token,
             'username' => 'alice',
         ]);
 
@@ -107,7 +107,7 @@ class ConversationControllerTest extends WebTestCase
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/conversations/new', [
-            '_token'   => $token,
+            '_token' => $token,
             'username' => 'nobody',
         ]);
 
@@ -126,7 +126,7 @@ class ConversationControllerTest extends WebTestCase
         $token = $crawler->filter('input[name="_token"]')->attr('value');
 
         $client->request('POST', '/conversations/new', [
-            '_token'   => $token,
+            '_token' => $token,
             'username' => 'bob',
         ]);
 
@@ -179,7 +179,7 @@ class ConversationControllerTest extends WebTestCase
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $client->loginUser($charlie);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122());
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122());
 
         $this->assertResponseStatusCodeSame(403);
     }
@@ -196,7 +196,7 @@ class ConversationControllerTest extends WebTestCase
         $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conversation->getId()->toRfc4122());
+        $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122());
 
         $this->assertResponseIsSuccessful();
     }
@@ -214,7 +214,7 @@ class ConversationControllerTest extends WebTestCase
         $convId = $conversation->getId()->toRfc4122();
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $convId);
+        $client->request('GET', '/conversations/'.$convId);
 
         $this->assertResponseIsSuccessful();
 
@@ -227,23 +227,23 @@ class ConversationControllerTest extends WebTestCase
         $this->assertCount(3, $parts, 'mercureAuthorization must be a valid JWT');
 
         $claims = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
-        $this->assertContains('conversation/' . $convId, $claims['mercure']['subscribe']);
-        $this->assertContains('typing/' . $convId, $claims['mercure']['subscribe']);
+        $this->assertContains('conversation/'.$convId, $claims['mercure']['subscribe']);
+        $this->assertContains('typing/'.$convId, $claims['mercure']['subscribe']);
     }
 
     // --- show: mark as read on open ---
 
     public function testShowMarksUnreadMessagesAsReadOnOpen(): void
     {
-        $client    = static::createClient();
+        $client = static::createClient();
         $container = static::getContainer();
-        $userRepo  = $container->get(UserRepository::class);
-        $em        = $container->get(EntityManagerInterface::class);
+        $userRepo = $container->get(UserRepository::class);
+        $em = $container->get(EntityManagerInterface::class);
         $messageRepo = $container->get(MessageRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
-        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $bob = $userRepo->findByUsername('bob');
+        $conv = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $msg = new Message($conv, $bob, 'Unread message');
         $em->persist($msg);
@@ -252,7 +252,7 @@ class ConversationControllerTest extends WebTestCase
         $this->assertNull($em->find(Message::class, $msg->getId())->getReadAt());
 
         $client->loginUser($alice);
-        $client->request('GET', '/conversations/' . $conv->getId()->toRfc4122());
+        $client->request('GET', '/conversations/'.$conv->getId()->toRfc4122());
 
         $this->assertResponseIsSuccessful();
 
@@ -264,15 +264,15 @@ class ConversationControllerTest extends WebTestCase
 
     public function testListShowsVisibleBadgeForUnreadMessages(): void
     {
-        $client    = static::createClient();
+        $client = static::createClient();
         $container = static::getContainer();
-        $userRepo  = $container->get(UserRepository::class);
-        $em        = $container->get(EntityManagerInterface::class);
+        $userRepo = $container->get(UserRepository::class);
+        $em = $container->get(EntityManagerInterface::class);
         $messageRepo = $container->get(MessageRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
-        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $bob = $userRepo->findByUsername('bob');
+        $conv = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
         $convId = $conv->getId()->toRfc4122();
 
         $before = $messageRepo->countUnreadPerConversation([$conv], $alice)[$convId];
@@ -292,14 +292,14 @@ class ConversationControllerTest extends WebTestCase
 
     public function testListHidesBadgeAfterAllMessagesAreRead(): void
     {
-        $client    = static::createClient();
+        $client = static::createClient();
         $container = static::getContainer();
-        $userRepo  = $container->get(UserRepository::class);
+        $userRepo = $container->get(UserRepository::class);
         $messageRepo = $container->get(MessageRepository::class);
 
         $alice = $userRepo->findByUsername('alice');
-        $bob   = $userRepo->findByUsername('bob');
-        $conv  = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $bob = $userRepo->findByUsername('bob');
+        $conv = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
 
         $messageRepo->markAllAsReadBy($conv, $alice);
 

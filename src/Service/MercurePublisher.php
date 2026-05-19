@@ -13,7 +13,9 @@ use Symfony\Component\Mercure\Update;
 
 class MercurePublisher
 {
-    public function __construct(private readonly HubInterface $hub) {}
+    public function __construct(private readonly HubInterface $hub)
+    {
+    }
 
     public function publishMessage(Message $message): void
     {
@@ -23,11 +25,11 @@ class MercurePublisher
         $update = new Update(
             topics: $topic,
             data: json_encode([
-                'type'           => 'new_message',
-                'id'             => $message->getId()->toRfc4122(),
-                'content'        => $message->getContent(),
-                'createdAt'      => $message->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'senderId'       => $message->getSender()->getId()->toRfc4122(),
+                'type' => 'new_message',
+                'id' => $message->getId()->toRfc4122(),
+                'content' => $message->getContent(),
+                'createdAt' => $message->getCreatedAt()->format(\DateTimeInterface::ATOM),
+                'senderId' => $message->getSender()->getId()->toRfc4122(),
                 'senderUsername' => $message->getSender()->getUsername(),
                 'conversationId' => $conversation->getId()->toRfc4122(),
             ], JSON_THROW_ON_ERROR),
@@ -44,7 +46,7 @@ class MercurePublisher
         $update = new Update(
             topics: $topic,
             data: json_encode([
-                'type'           => 'typing',
+                'type' => 'typing',
                 'senderUsername' => $user->getUsername(),
             ], JSON_THROW_ON_ERROR),
             private: true,
@@ -60,7 +62,7 @@ class MercurePublisher
         $update = new Update(
             topics: $topic,
             data: json_encode([
-                'type'           => 'messages_read',
+                'type' => 'messages_read',
                 'conversationId' => $conversation->getId()->toRfc4122(),
                 'readerUsername' => $reader->getUsername(),
             ], JSON_THROW_ON_ERROR),
@@ -77,9 +79,9 @@ class MercurePublisher
         $update = new Update(
             topics: $topic,
             data: json_encode([
-                'type'       => 'presence',
-                'userId'     => $userId,
-                'status'     => $status->value,
+                'type' => 'presence',
+                'userId' => $userId,
+                'status' => $status->value,
             ], JSON_THROW_ON_ERROR),
             private: true,
         );

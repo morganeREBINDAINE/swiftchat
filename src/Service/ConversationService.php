@@ -14,7 +14,8 @@ class ConversationService
     public function __construct(
         private readonly ConversationRepository $conversationRepository,
         private readonly EntityManagerInterface $em,
-    ) {}
+    ) {
+    }
 
     /**
      * Returns the existing conversation between two users, or creates one.
@@ -27,7 +28,7 @@ class ConversationService
     {
         $conversation = $this->conversationRepository->findBetween($a, $b);
 
-        if ($conversation !== null) {
+        if (null !== $conversation) {
             return $conversation;
         }
 

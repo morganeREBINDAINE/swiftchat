@@ -12,7 +12,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
-use Symfony\Component\Uid\Uuid;
 
 class MercurePublisherTest extends TestCase
 {
@@ -21,7 +20,7 @@ class MercurePublisherTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->hub       = $this->createMock(HubInterface::class);
+        $this->hub = $this->createMock(HubInterface::class);
         $this->publisher = new MercurePublisher($this->hub);
     }
 
@@ -36,13 +35,14 @@ class MercurePublisherTest extends TestCase
             ->with($this->isInstanceOf(Update::class))
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
         $this->publisher->publishMessage($message);
 
         $topics = $capturedUpdate->getTopics();
-        $this->assertContains('conversation/' . $conversation->getId()->toRfc4122(), $topics);
+        $this->assertContains('conversation/'.$conversation->getId()->toRfc4122(), $topics);
     }
 
     public function testPublishMessagePayloadContainsRequiredFields(): void
@@ -55,6 +55,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -81,6 +82,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -99,12 +101,13 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
         $this->publisher->publishTyping($alice, $conversation);
 
-        $this->assertContains('typing/' . $conversation->getId()->toRfc4122(), $capturedUpdate->getTopics());
+        $this->assertContains('typing/'.$conversation->getId()->toRfc4122(), $capturedUpdate->getTopics());
     }
 
     public function testPublishTypingPayload(): void
@@ -117,6 +120,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -138,6 +142,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -156,12 +161,13 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
         $this->publisher->publishPresence($userId, \App\Enum\PresenceStatus::Online);
 
-        $this->assertContains('presence/' . $userId, $capturedUpdate->getTopics());
+        $this->assertContains('presence/'.$userId, $capturedUpdate->getTopics());
     }
 
     public function testPublishPresencePayload(): void
@@ -174,6 +180,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -196,6 +203,7 @@ class MercurePublisherTest extends TestCase
             ->method('publish')
             ->willReturnCallback(function (Update $update) use (&$capturedUpdate): string {
                 $capturedUpdate = $update;
+
                 return 'urn:uuid:test';
             });
 
@@ -218,7 +226,7 @@ class MercurePublisherTest extends TestCase
         $bob->setPassword('hashed');
 
         $conversation = new Conversation($alice, $bob);
-        $message      = new Message($conversation, $alice, 'Hello Bob!');
+        $message = new Message($conversation, $alice, 'Hello Bob!');
 
         return [$alice, $bob, $conversation, $message];
     }

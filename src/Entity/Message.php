@@ -73,13 +73,13 @@ class Message
 
     public function markAsRead(): void
     {
-        if ($this->readAt === null) {
+        if (null === $this->readAt) {
             $this->readAt = new \DateTimeImmutable();
         }
     }
 
     public function isRead(): bool
     {
-        return $this->readAt !== null;
+        return null !== $this->readAt;
     }
 }
