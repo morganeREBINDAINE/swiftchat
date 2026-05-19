@@ -72,6 +72,90 @@ SwiftChat is a real-time messaging application allowing registered users to exch
 - Cursor-based pagination (50 messages per page, infinite scroll upward)
 - Auto-scroll to bottom when opening a conversation
 
+### 3.5 Presence
+
+#### Overview
+
+Handle user presence (online / away / offline) via Redis to avoid database writes, with Mercure for real-time broadcasting.
+
+#### Redis Data Structure
+
+`presence:{userId}` — Hash with TTL
+```
+status    → "online" | "away"
+last_seen → timestamp Unix
+TTL       → 90s (online) | 180s (away)
+```
+
+`presence:active_set` — Set of all currently active user IDs
+```
+{ "12", "45", "67" }
+```
+No TTL — managed manually.
+
+#### Frontend Behaviour
+**Heartbeat** — POST `/presence/heartbeat` every 60s from all authenticated pages
+
+Status sent depends on activity :
+```
+document.hidden                    → away
+no message read/written for 2min   → away
+otherwise                          → online
+```
+
+**Going offline** — on `beforeunload` event, send `POST /presence/offline` via `sendBeacon` (fire-and-forget, guaranteed before page closes)
+
+**Receiving presence updates** — subscribe to Mercure topic `presence/{interlocutorId}` and apply a 3s delay before displaying "offline" to absorb false positives during page navigation.
+
+#### Backend Behaviour
+
+##### POST `/presence/heartbeat`
+
+1. Read current status from Redis
+2. Write presence:{userId} hash with new status + TTL
+3. SADD presence:active_set {userId}
+4. If status changed → publish on Mercure presence/{userId}
+
+##### POST `/presence/offline` (via sendBeacon)
+
+1. DEL presence:{userId}
+2. SREM presence:active_set {userId}
+3. Publish offline on Mercure presence/{userId}
+
+##### GET `/presence/{interlocutorId}` (called once on conversation open)
+Read `presence:{userId}` from Redis → return status, or `offline` if key does not exist.
+
+#### Cron — every 5 minutes
+Safety net for cases where `beforeunload` never fires (network cut, browser crash, dead battery).
+```
+1. SMEMBERS presence:active_set  → get all active IDs
+2. For each ID :
+   EXISTS presence:{userId} ?
+   YES → do nothing
+   NO  → key expired silently, SREM presence:active_set {userId}, publish "offline" on Mercure presence/{userId}
+```
+
+#### Full Status Lifecycle
+```
+User opens app
+└─ heartbeat → SADD active_set + write presence key → Mercure "online"
+
+User becomes inactive / hides tab
+└─ heartbeat → update presence key (TTL 180s) → Mercure "away" (if changed)
+
+User closes tab (normal)
+└─ beforeunload → DEL presence key + SREM active_set → Mercure "offline"
+
+User loses network / browser crashes
+└─ TTL expires silently
+└─ Cron (max 5min later) → detects missing key → SREM + Mercure "offline"
+
+Another user opens a conversation
+└─ GET /presence/{id} → initial status from Redis
+└─ Subscribe Mercure presence/{id} → live updates
+└─ On receiving "offline" → wait 3s before updating UI
+```
+
 ---
 
 ## 4. Email Notifications (Messenger + Worker)
