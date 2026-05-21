@@ -20,61 +20,87 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v3
+
       - name: Build Docker images
-        uses: docker/bake-action@v7
+        uses: docker/bake-action@v6
         with:
           pull: true
           load: true
-          source: .
           files: |
             compose.yaml
-            compose.override.yaml
+            compose.ci.yaml
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}
             *.cache-from=type=gha,scope=refs/heads/main
             *.cache-to=type=gha,scope=${{github.ref}},mode=max
+
       - name: Start services
-        run: docker compose up --wait --no-build
+        run: docker compose -f compose.yaml -f compose.ci.yaml up --wait --no-build
+
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost
+
       - name: Check HTTPS reachability
         run: curl -v --insecure --fail-with-body https://localhost
+
       - name: Check Mercure reachability
         run: curl -vI --insecure --fail-with-body https://localhost/.well-known/mercure?topic=test
-      - name: Create test database
-        run: docker compose exec -T php bin/console -e test doctrine:database:create
+
       - name: Run migrations
-        run: docker compose exec -T php bin/console -e test doctrine:migrations:migrate --no-interaction
+        run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:migrations:migrate --no-interaction
+
       - name: Run PHPUnit
-        run: docker compose exec -T php bin/phpunit
-      - name: Doctrine Schema Validator
-        run: docker compose exec -T php bin/console -e test doctrine:schema:validate
+        run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/phpunit
+
+      - name: Doctrine schema validator
+        run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:schema:validate
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-      statuses: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
-      - name: Lint Code Base
-        uses: super-linter/super-linter/slim@v8
-        env:
-          GITHUB_ACTIONS_CONFIG_FILE: actionlint.yaml
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_CHECKOV: false
-          VALIDATE_TRIVY: false
-          VALIDATE_BIOME_FORMAT: false
-          VALIDATE_BIOME_LINT: false
-          VALIDATE_PHP_BUILTIN: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/bake-action@v6
+        with:
+          pull: true
+          load: true
+          files: |
+            compose.yaml
+            compose.ci.yaml
+          set: |
+            *.cache-from=type=gha,scope=${{github.ref}}
+            *.cache-from=type=gha,scope=refs/heads/main
+            *.cache-to=type=gha,scope=${{github.ref}},mode=max
+
+      - name: Warm up cache
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console cache:warmup --env=dev
+
+      - name: PHP-CS-Fixer
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php php vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: PHPStan
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php php vendor/bin/phpstan analyse --memory-limit=256M
+
+      - name: Lint Twig
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:twig
+
+      - name: Lint YAML
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:yaml config
+
+      - name: Lint container
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:container

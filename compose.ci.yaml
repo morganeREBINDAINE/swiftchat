@@ -1,0 +1,18 @@
+---
+# CI override — builds the test image with vendor baked in, no volume mounts
+services:
+  php:
+    build:
+      context: .
+      target: frankenphp_test
+    environment:
+      APP_ENV: test
+      APP_SECRET: ${APP_SECRET:-ci-insecure-secret-for-testing}
+
+  worker:
+    build:
+      context: .
+      target: frankenphp_test
+    environment:
+      APP_ENV: test
+      APP_SECRET: ${APP_SECRET:-ci-insecure-secret-for-testing}

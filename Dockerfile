@@ -82,6 +82,26 @@ COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 
 CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch" ]
 
+# CI/test FrankenPHP image — vendor baked in (including dev deps), no volume mounts
+FROM frankenphp_base AS frankenphp_test
+
+ENV APP_ENV=test
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+COPY --link composer.* symfony.* ./
+RUN composer install --no-cache --prefer-dist --no-autoloader --no-scripts --no-progress
+
+COPY --link --exclude=frankenphp/ . ./
+
+RUN <<-EOF
+	mkdir -p var/cache var/log var/share
+	composer dump-autoload
+	chmod +x bin/console
+	chmod -R g=u var
+	sync
+EOF
+
 # Builder for the prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod_builder
 
