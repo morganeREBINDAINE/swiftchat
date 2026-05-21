@@ -87,20 +87,17 @@ jobs:
             *.cache-from=type=gha,scope=refs/heads/main
             *.cache-to=type=gha,scope=${{github.ref}},mode=max
 
-      - name: Warm up cache
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console cache:warmup --env=dev
-
       - name: PHP-CS-Fixer
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php php vendor/bin/php-cs-fixer fix --dry-run --diff
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php php vendor/bin/php-cs-fixer fix --dry-run --diff
 
       - name: PHPStan
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php php vendor/bin/phpstan analyse --memory-limit=256M
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php php vendor/bin/phpstan analyse --memory-limit=256M
 
       - name: Lint Twig
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:twig
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:twig
 
       - name: Lint YAML
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:yaml config
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:yaml config
 
       - name: Lint container
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps php bin/console lint:container
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:container
