@@ -16,6 +16,8 @@ services:
     build:
       context: .
       target: frankenphp_test
+    healthcheck:
+      disable: true
     environment:
       APP_ENV: test
       APP_SECRET: ${APP_SECRET:-ci-insecure-secret-for-testing}

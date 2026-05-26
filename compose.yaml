@@ -53,8 +53,6 @@ services:
 
   worker:
     restart: unless-stopped
-    healthcheck:
-      disable: true
     depends_on:
       - php
       - database
