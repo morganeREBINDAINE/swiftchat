@@ -94,7 +94,7 @@ jobs:
         run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php php vendor/bin/phpstan analyse --memory-limit=256M
 
       - name: Lint Twig
-        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:twig
+        run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:twig templates/
 
       - name: Lint YAML
         run: docker compose -f compose.yaml -f compose.ci.yaml run --rm --no-deps -e SKIP_DB_WAIT=1 php bin/console lint:yaml config
