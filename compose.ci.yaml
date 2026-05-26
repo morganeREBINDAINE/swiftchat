@@ -9,6 +9,7 @@ services:
     environment:
       APP_ENV: test
       APP_SECRET: ${APP_SECRET:-ci-insecure-secret-for-testing}
+      SKIP_DB_WAIT: "1"
 
   worker:
     image: ${IMAGES_PREFIX:-}app-php-ci

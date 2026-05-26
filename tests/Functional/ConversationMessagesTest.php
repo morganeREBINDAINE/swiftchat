@@ -189,6 +189,7 @@ class ConversationMessagesTest extends WebTestCase
 
     /**
      * @param string[] $contents
+     *
      * @return Message[]
      */
     private function seedMessages(Conversation $conversation, mixed $sender, array $contents): array
