@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Entity\User;
+use App\Messenger\Message\NotifyUnreadMessageMessage;
 use App\Repository\ConversationRepository;
 use App\Security\Voter\ConversationVoter;
 use App\Service\MercurePublisher;
@@ -16,6 +17,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
@@ -25,6 +28,7 @@ class MessageController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly MercurePublisher $mercurePublisher,
+        private readonly MessageBusInterface $bus,
         #[Autowire(service: 'limiter.send_message')]
         private readonly RateLimiterFactory $sendMessageLimiter,
     ) {
@@ -78,7 +82,14 @@ class MessageController extends AbstractController
 
         $this->mercurePublisher->publishMessage($message);
 
-        // Messenger dispatch(NotifyUnreadMessageMessage) will be wired here in Phase 4
+        $recipient = $conversation->getOtherParticipant($user);
+        $this->bus->dispatch(
+            new NotifyUnreadMessageMessage(
+                $message->getId()->toRfc4122(),
+                $recipient->getId()->toRfc4122(),
+            ),
+            [new DelayStamp(300_000)],
+        );
 
         return $this->json([
             'id' => $message->getId()->toRfc4122(),

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<p>Hi {{ recipientUsername }},</p>
+
+<p><strong>{{ senderUsername }}</strong> sent you a message on SwiftChat that you haven't read yet:</p>
+
+<blockquote style="border-left: 3px solid #ccc; margin: 1em 0; padding: 0.5em 1em; color: #555;">
+    {{ messageContent|nl2br }}
+</blockquote>
+
+<p>Sent on {{ sentAt|date('d/m/Y') }} at {{ sentAt|date('H:i') }} UTC.</p>
+
+<p><a href="{{ app.request ? absolute_url(path('conversation_list')) : '#' }}">Open SwiftChat</a> to reply.</p>
+
+<p style="font-size: 0.85em; color: #888;">
+    You are receiving this email because you have unread message notifications enabled.
+    You can disable them in your profile settings.
+</p>
+</body>
+</html>
