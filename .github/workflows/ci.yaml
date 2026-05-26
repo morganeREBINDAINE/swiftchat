@@ -59,6 +59,9 @@ jobs:
       - name: Run migrations
         run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:migrations:migrate --no-interaction
 
+      - name: Load fixtures
+        run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:fixtures:load --no-interaction
+
       - name: Run PHPUnit
         run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php php bin/phpunit
 
