@@ -103,7 +103,7 @@ RUN <<-EOF
 EOF
 
 # Pre-warm the dev container so PHPStan has the XML at lint time (no DB needed for compilation)
-RUN APP_SECRET=build-placeholder php bin/console cache:warmup --env=dev --no-debug
+RUN APP_SECRET=build-placeholder php bin/console cache:warmup --env=dev
 
 # Builder for the prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod_builder
