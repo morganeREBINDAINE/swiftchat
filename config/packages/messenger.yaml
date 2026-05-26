@@ -13,8 +13,7 @@ framework:
             # scheduler_default is auto-registered by symfony/scheduler
 
         routing:
-            # async email notifications will route here once implemented
-            # 'App\Messenger\Message\NotifyUnreadMessageMessage': async
+            'App\Messenger\Message\NotifyUnreadMessageMessage': async
 
 when@test:
     framework:

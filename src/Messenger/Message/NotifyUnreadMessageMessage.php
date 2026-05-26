@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Messenger\Message;
+
+final readonly class NotifyUnreadMessageMessage
+{
+    public function __construct(
+        public string $messageId,
+        public string $recipientId,
+    ) {
+    }
+}
