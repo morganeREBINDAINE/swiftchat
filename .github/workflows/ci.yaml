@@ -53,6 +53,9 @@ jobs:
       - name: Check Mercure reachability
         run: curl -vI --insecure --fail-with-body https://localhost/.well-known/mercure?topic=test
 
+      - name: Create test database
+        run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:database:create --if-not-exists
+
       - name: Run migrations
         run: docker compose -f compose.yaml -f compose.ci.yaml exec -T php bin/console doctrine:migrations:migrate --no-interaction
 
