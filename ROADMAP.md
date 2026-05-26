@@ -107,20 +107,20 @@ EmailVerificationToken
 
 **Goal: email sent if message unread after 5 minutes**
 
-- [ ] `NotifyUnreadMessageMessage` (readonly DTO: `messageId`, `recipientId`)
-- [ ] Dispatch in `MessageController::send()` with `DelayStamp(300_000)`
-- [ ] `NotifyUnreadMessageHandler`:
+- [x] `NotifyUnreadMessageMessage` (readonly DTO: `messageId`, `recipientId`)
+- [x] Dispatch in `MessageController::send()` with `DelayStamp(300_000)`
+- [x] `NotifyUnreadMessageHandler`:
     - Fetch `Message` by ID
     - Check `read_at === null`
     - Check `email_notifications_enabled === true`
     - Check `is_verified === true`
     - Send via `MailerInterface`
     - Log the send
-- [ ] HTML + plain text email templates
-- [ ] Messenger transport config (Doctrine) + routing in `messenger.yaml`
+- [x] HTML + plain text email templates
+- [x] Messenger transport config (Doctrine) + routing in `messenger.yaml`
 - [ ] Mailer DSN config (Brevo) in `.env.local`
 - [ ] Test worker locally: `docker compose exec php bin/console messenger:consume async`
-- [ ] Unit tests on handler (all 5 cases)
+- [x] Unit tests on handler (all 5 cases)
 
 ---
 
