@@ -128,9 +128,9 @@ EmailVerificationToken
 
 **Goal: user profile page, basic admin dashboard**
 
-- [ ] `ProfileController`: edit username/email/avatar/password
-- [ ] Avatar upload (manual approach: non-mapped transit property + mapped `avatarName`)
-- [ ] `email_notifications_enabled` toggle
+- [x] `ProfileController`: edit username/email/avatar/password
+- [x] Avatar upload (VichUploaderBundle: non-mapped transit property + mapped `avatar`, lifecycle callback to reset after flush)
+- [x] `email_notifications_enabled` toggle
 - [ ] `AdminController`: user list, enable/disable account
 - [ ] `ROLE_ADMIN` protection + admin fixture
 - [ ] Basic stats (messages today, active users)
