@@ -9,3 +9,6 @@ php:
 
 perm:
 	docker compose exec php chown -R 1000:1000 /app
+
+fixtures:
+	docker compose exec php php bin/console d:f:l --no-interaction

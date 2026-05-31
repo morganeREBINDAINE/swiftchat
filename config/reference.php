@@ -261,7 +261,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         formats?: array<string, string|list<scalar|Param|null>>,
  *     },
  *     assets?: bool|array{ // Assets configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         strict_mode?: bool|Param, // Throw an exception if an entry is missing from the manifest.json. // Default: false
  *         version_strategy?: scalar|Param|null, // Default: null
  *         version?: scalar|Param|null, // Default: null
@@ -1233,8 +1233,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type MercureConfig = array{
  *     hubs?: array<string, array{ // Default: []
- *             url?: scalar|Param|null, // URL of the hub's publish endpoint // Default: null
- *             public_url?: scalar|Param|null, // URL of the hub's public endpoint
+ *             url?: scalar|Param|null, // URL of the hub's publish endpoint
+ *             public_url?: scalar|Param|null, // URL of the hub's public endpoint // Default: null
  *             jwt?: string|array{ // JSON Web Token configuration.
  *                 value?: scalar|Param|null, // JSON Web Token to use to publish to this hub.
  *                 provider?: scalar|Param|null, // The ID of a service to call to provide the JSON Web Token.
@@ -1417,6 +1417,44 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             },
  *         }>,
  * }
+ * @psalm-type VichUploaderConfig = array{
+ *     default_filename_attribute_suffix?: scalar|Param|null, // Default: "_name"
+ *     db_driver?: scalar|Param|null,
+ *     storage?: scalar|Param|null, // Default: "file_system"
+ *     use_flysystem_to_resolve_uri?: bool|Param, // Default: false
+ *     twig?: scalar|Param|null, // twig requires templating // Default: true
+ *     form?: scalar|Param|null, // Default: true
+ *     metadata?: array{
+ *         cache?: scalar|Param|null, // Default: "file"
+ *         type?: scalar|Param|null, // Default: "attribute"
+ *         file_cache?: array{
+ *             dir?: scalar|Param|null, // Default: "%kernel.cache_dir%/vich_uploader"
+ *         },
+ *         auto_detection?: bool|Param, // Default: true
+ *         directories?: list<array{ // Default: []
+ *                 path?: scalar|Param|null,
+ *                 namespace_prefix?: scalar|Param|null, // Default: ""
+ *             }>,
+ *     },
+ *     mappings?: array<string, array{ // Default: []
+ *             uri_prefix?: scalar|Param|null, // Default: "/uploads"
+ *             upload_destination?: scalar|Param|null, // Default: null
+ *             namer?: string|array{
+ *                 service?: scalar|Param|null, // Default: null
+ *                 options?: mixed, // Default: null
+ *             },
+ *             directory_namer?: string|array{
+ *                 service?: scalar|Param|null, // Default: null
+ *                 options?: mixed, // Default: null
+ *             },
+ *             delete_on_remove?: scalar|Param|null, // Default: true
+ *             erase_fields?: scalar|Param|null, // Default: true
+ *             delete_on_update?: scalar|Param|null, // Default: true
+ *             inject_on_load?: scalar|Param|null, // Default: false
+ *             namer_keep_extension?: scalar|Param|null, // Default: false
+ *             db_driver?: scalar|Param|null, // Default: null
+ *         }>,
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1429,6 +1467,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     mercure?: MercureConfig,
  *     symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *     monolog?: MonologConfig,
+ *     vich_uploader?: VichUploaderConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1443,6 +1482,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         maker?: MakerConfig,
  *         web_profiler?: WebProfilerConfig,
  *         monolog?: MonologConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1456,6 +1496,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         mercure?: MercureConfig,
  *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         monolog?: MonologConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1471,6 +1512,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         dama_doctrine_test?: DamaDoctrineTestConfig,
  *         web_profiler?: WebProfilerConfig,
  *         monolog?: MonologConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
