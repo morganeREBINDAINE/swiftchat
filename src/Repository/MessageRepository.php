@@ -105,6 +105,26 @@ class MessageRepository extends ServiceEntityRepository
         return $map;
     }
 
+    public function countToday(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.createdAt >= :today')
+            ->setParameter('today', new \DateTimeImmutable('today'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countActiveUserIdsToday(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(DISTINCT IDENTITY(m.sender))')
+            ->where('m.createdAt >= :since')
+            ->setParameter('since', new \DateTimeImmutable('-24 hours'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function save(Message $message, bool $flush = false): void
     {
         $this->getEntityManager()->persist($message);

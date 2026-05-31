@@ -21,6 +21,10 @@ class UserChecker implements UserCheckerInterface
         if (!$user->isVerified()) {
             throw new CustomUserMessageAuthenticationException('Please verify your email address before logging in.');
         }
+
+        if (!$user->isEnabled()) {
+            throw new CustomUserMessageAuthenticationException('Your account has been disabled. Please contact support.');
+        }
     }
 
     public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void

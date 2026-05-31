@@ -53,6 +53,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => true])]
     private bool $emailNotificationsEnabled = true;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isEnabled = true;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -183,6 +186,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailNotificationsEnabled(bool $emailNotificationsEnabled): static
     {
         $this->emailNotificationsEnabled = $emailNotificationsEnabled;
+
+        return $this;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->isEnabled;
+    }
+
+    public function setIsEnabled(bool $isEnabled): static
+    {
+        $this->isEnabled = $isEnabled;
 
         return $this;
     }
