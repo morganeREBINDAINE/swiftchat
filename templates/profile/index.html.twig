@@ -1,9 +1,148 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Profile — SwiftChat{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .profile-page {
+        max-width: 560px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .profile-card {
+        background: #fff;
+        border-radius: .5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        padding: 1.5rem;
+    }
+    .profile-card__title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        padding-bottom: .75rem;
+        border-bottom: 1px solid #e4e4e7;
+    }
+    .avatar-preview {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .avatar-img {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .avatar-placeholder {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #6366f1;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .form-errors { margin: .2rem 0 .5rem; color: #991b1b; font-size: .82rem; }
+    .form-errors ul { margin: 0; padding-left: 1.2rem; }
+    .checkbox-row { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; font-size: .9rem; }
+    .checkbox-row input[type=checkbox] { width: auto; }
+    .form-actions { margin-top: 1.25rem; }
+</style>
+{% endblock %}
 
 {% block body %}
-<h1>Welcome, {{ app.user.username }}</h1>
+<div class="profile-page">
 
-<a href="{{ path('app_logout') }}">Log out</a>
+    {# ── Profile info ── #}
+    <div class="profile-card">
+        <div class="profile-card__title">Profile information</div>
+        {{ form_start(editForm) }}
+
+        <div class="form-group">
+            {{ form_label(editForm.username) }}
+            {{ form_widget(editForm.username) }}
+            <div class="form-errors">{{ form_errors(editForm.username) }}</div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(editForm.email) }}
+            {{ form_widget(editForm.email) }}
+            <div class="form-errors">{{ form_errors(editForm.email) }}</div>
+        </div>
+
+        <div class="checkbox-row">
+            {{ form_widget(editForm.emailNotificationsEnabled) }}
+            {{ form_label(editForm.emailNotificationsEnabled) }}
+        </div>
+        <div class="form-errors">{{ form_errors(editForm.emailNotificationsEnabled) }}</div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Save changes</button>
+        </div>
+        {{ form_end(editForm) }}
+    </div>
+
+    {# ── Avatar ── #}
+    <div class="profile-card">
+        <div class="profile-card__title">Avatar</div>
+
+        <div class="avatar-preview">
+            {% if user.avatar %}
+                <img src="{{ vich_uploader_asset(user, 'avatarFile') }}"
+                     alt="{{ user.username }}"
+                     class="avatar-img">
+            {% else %}
+                <div class="avatar-placeholder">{{ user.username|first|upper }}</div>
+            {% endif %}
+            <span style="font-size:.85rem; color:#71717a;">JPG, PNG, WebP or GIF — max 2 MB</span>
+        </div>
+
+        {{ form_start(avatarForm, { attr: { enctype: 'multipart/form-data' } }) }}
+        <div class="form-group">
+            {{ form_widget(avatarForm.avatarFile) }}
+            <div class="form-errors">{{ form_errors(avatarForm.avatarFile) }}</div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Upload avatar</button>
+        </div>
+        {{ form_end(avatarForm) }}
+    </div>
+
+    {# ── Change password ── #}
+    <div class="profile-card">
+        <div class="profile-card__title">Change password</div>
+        {{ form_start(passwordForm) }}
+
+        <div class="form-group">
+            {{ form_label(passwordForm.currentPassword) }}
+            {{ form_widget(passwordForm.currentPassword) }}
+            <div class="form-errors">{{ form_errors(passwordForm.currentPassword) }}</div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(passwordForm.newPassword.first) }}
+            {{ form_widget(passwordForm.newPassword.first) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(passwordForm.newPassword.second) }}
+            {{ form_widget(passwordForm.newPassword.second) }}
+            <div class="form-errors">{{ form_errors(passwordForm.newPassword) }}</div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Change password</button>
+        </div>
+        {{ form_end(passwordForm) }}
+    </div>
+
+</div>
 {% endblock %}
