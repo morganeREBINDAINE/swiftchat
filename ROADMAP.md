@@ -131,9 +131,9 @@ EmailVerificationToken
 - [x] `ProfileController`: edit username/email/avatar/password
 - [x] Avatar upload (VichUploaderBundle: non-mapped transit property + mapped `avatar`, lifecycle callback to reset after flush)
 - [x] `email_notifications_enabled` toggle
-- [ ] `AdminController`: user list, enable/disable account
-- [ ] `ROLE_ADMIN` protection + admin fixture
-- [ ] Basic stats (messages today, active users)
+- [x] `AdminController`: user list, enable/disable account
+- [x] `ROLE_ADMIN` protection + admin fixture
+- [x] Basic stats (messages today, active users)
 
 ---
 

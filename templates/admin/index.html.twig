@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin — SwiftChat{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .admin-page { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+    .admin-page h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: #fff; border: 1px solid #e4e4e7; border-radius: .5rem; padding: 1.25rem 1.5rem; }
+    .stat-card__value { font-size: 2rem; font-weight: 700; color: #6366f1; }
+    .stat-card__label { font-size: .85rem; color: #71717a; margin-top: .25rem; }
+
+    /* Table */
+    .table-wrap { background: #fff; border: 1px solid #e4e4e7; border-radius: .5rem; overflow: hidden; }
+    .table-wrap h2 { font-size: 1rem; font-weight: 600; padding: 1rem 1.25rem; border-bottom: 1px solid #e4e4e7; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th { text-align: left; padding: .6rem 1.25rem; background: #f4f4f5; font-weight: 500; color: #71717a; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+    td { padding: .7rem 1.25rem; border-top: 1px solid #f4f4f5; }
+    tr:hover td { background: #fafafa; }
+
+    .badge { display: inline-block; padding: .15rem .5rem; border-radius: 9999px; font-size: .75rem; font-weight: 500; }
+    .badge--green { background: #dcfce7; color: #166534; }
+    .badge--red { background: #fee2e2; color: #991b1b; }
+    .badge--yellow { background: #fef9c3; color: #854d0e; }
+    .badge--purple { background: #ede9fe; color: #5b21b6; }
+
+    .btn--danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .btn--danger:hover { background: #fecaca; }
+    .btn--success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .btn--success:hover { background: #bbf7d0; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-page">
+    <h1>Admin Dashboard</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card__value">{{ totalUsers }}</div>
+            <div class="stat-card__label">Total users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card__value">{{ messagesToday }}</div>
+            <div class="stat-card__label">Messages today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card__value">{{ activeUsersToday }}</div>
+            <div class="stat-card__label">Active users (24 h)</div>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <h2>Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Verified</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if 'ROLE_ADMIN' in user.roles %}
+                            <span class="badge badge--purple">Admin</span>
+                        {% else %}
+                            <span class="badge badge--green">User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.verified %}
+                            <span class="badge badge--green">Yes</span>
+                        {% else %}
+                            <span class="badge badge--yellow">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.enabled %}
+                            <span class="badge badge--green">Enabled</span>
+                        {% else %}
+                            <span class="badge badge--red">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.createdAt|date('Y-m-d') }}</td>
+                    <td>
+                        {% if app.user.id != user.id %}
+                        <form method="post" action="{{ path('admin_user_toggle_enabled', {id: user.id}) }}" style="display:inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_toggle_' ~ user.id) }}">
+                            {% if user.enabled %}
+                                <button type="submit" class="btn btn--sm btn--danger"
+                                    onclick="return confirm('Disable {{ user.username }}?')">Disable</button>
+                            {% else %}
+                                <button type="submit" class="btn btn--sm btn--success">Enable</button>
+                            {% endif %}
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" style="color:#71717a;text-align:center;padding:2rem">No users found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

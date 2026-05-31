@@ -37,6 +37,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['username' => $username]);
     }
 
+    /** @return User[] */
+    public function findAllOrderedByCreatedAt(int $limit = 200): array
+    {
+        return $this->createQueryBuilder('u')
+            ->orderBy('u.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function save(User $user, bool $flush = false): void
     {
         $this->getEntityManager()->persist($user);

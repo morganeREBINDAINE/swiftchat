@@ -83,6 +83,9 @@
                 <a href="{{ path('conversation_list') }}">Messages</a>
                 <a href="{{ path('conversation_new') }}">New conversation</a>
                 <a href="{{ path('app_profile') }}">{{ app.user.username }}</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('admin_index') }}">Admin</a>
+                {% endif %}
                 <a href="{{ path('app_logout') }}">Log out</a>
             </div>
         </nav>

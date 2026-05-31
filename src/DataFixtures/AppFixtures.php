@@ -11,6 +11,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    public const USER_ADMIN = 'user_admin';
     public const USER_ALICE = 'user_alice';
     public const USER_BOB = 'user_bob';
     public const USER_CHARLIE = 'user_charlie';
@@ -25,6 +26,14 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        // admin — verified, ROLE_ADMIN
+        $admin = $this->makeUser(
+            username: 'admin',
+            email: 'admin@swiftchat.app',
+            verified: true,
+            roles: ['ROLE_ADMIN'],
+        );
+
         // alice — verified, for portfolio demo and general auth tests
         $alice = $this->makeUser(
             username: 'alice',
@@ -46,23 +55,29 @@ class AppFixtures extends Fixture
             verified: false,
         );
 
+        $manager->persist($admin);
         $manager->persist($alice);
         $manager->persist($bob);
         $manager->persist($charlie);
         $manager->flush();
 
+        $this->addReference(self::USER_ADMIN, $admin);
         $this->addReference(self::USER_ALICE, $alice);
         $this->addReference(self::USER_BOB, $bob);
         $this->addReference(self::USER_CHARLIE, $charlie);
     }
 
-    private function makeUser(string $username, string $email, bool $verified): User
+    /** @param string[] $roles */
+    private function makeUser(string $username, string $email, bool $verified, array $roles = []): User
     {
         $user = new User();
         $user->setUsername($username);
         $user->setEmail($email);
         $user->setPassword($this->hasher->hashPassword($user, self::DEFAULT_PASSWORD));
         $user->setIsVerified($verified);
+        if ($roles !== []) {
+            $user->setRoles($roles);
+        }
 
         return $user;
     }
