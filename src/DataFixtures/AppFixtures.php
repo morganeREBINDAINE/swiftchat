@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
+use App\Entity\Conversation;
+use App\Entity\Message;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -65,6 +67,27 @@ class AppFixtures extends Fixture
         $this->addReference(self::USER_ALICE, $alice);
         $this->addReference(self::USER_BOB, $bob);
         $this->addReference(self::USER_CHARLIE, $charlie);
+
+        // Demo conversation with sample messages for portfolio presentation
+        $conv = new Conversation($alice, $bob);
+        $manager->persist($conv);
+
+        $demoMessages = [
+            [$alice, 'Hey Bob! Have you tried SwiftChat yet?'],
+            [$bob, 'Hi Alice! Just signed up — looks great so far!'],
+            [$alice, 'It has real-time messaging with Mercure, typing indicators, and presence status.'],
+            [$bob, 'Nice! What\'s the stack?'],
+            [$alice, 'Symfony 7 + FrankenPHP + PostgreSQL + Redis. Full Docker setup.'],
+            [$bob, 'Impressive. Any async features?'],
+            [$alice, 'Yes — email notifications for unread messages after 5 minutes, via Symfony Messenger.'],
+            [$bob, 'That\'s a solid portfolio project. I can see you put a lot of work into this!'],
+        ];
+
+        foreach ($demoMessages as [$sender, $content]) {
+            $manager->persist(new Message($conv, $sender, $content));
+        }
+
+        $manager->flush();
     }
 
     /** @param string[] $roles */

@@ -142,11 +142,21 @@ EmailVerificationToken
 **Goal: deployed, tested, documented**
 
 - [ ] Complete test suite (critical WebTestCase + PHPUnit unit tests)
-- [ ] Production environment variables (`.env.prod` / Docker secrets)
-- [ ] Supervisor config for the Messenger worker (or FrankenPHP worker mode)
+- [ ] Production environment variables (Docker secrets / `.env.local` on server)
+- [ ] Messenger worker runs as a Docker service (already in `compose.yaml`; verify restart policy)
 - [ ] CI (GitHub Actions: lint, tests)
 - [ ] README with local setup + Docker instructions
 - [ ] Demo fixtures for portfolio presentation
+
+### Production infrastructure
+
+- [ ] **Mailer — Brevo SMTP**: set `MAILER_DSN=smtp://LOGIN:SMTP_KEY@smtp-relay.brevo.com:587` in prod env
+- [ ] **Async transport — RabbitMQ**: install `symfony/amqp-messenger`; add `when@prod` override in `messenger.yaml` to switch `async` from Redis to `amqp://...@rabbitmq:5672/%2f/messages`; add RabbitMQ service to `compose.prod.yaml`
+  - Dev keeps Redis (already running for presence — zero extra containers)
+  - Prod uses RabbitMQ with a named, durable queue for message durability across restarts
+- [ ] Configure prod `SERVER_NAME` (domain or IP) in `.env.local` on the server
+- [ ] Run `doctrine:migrations:migrate` on first deploy
+- [ ] Load demo fixtures on first deploy (`doctrine:fixtures:load --no-interaction`)
 
 ---
 

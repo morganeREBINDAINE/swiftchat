@@ -8,10 +8,32 @@ services:
       target: frankenphp_prod
     environment:
       APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MAILER_DSN: ${MAILER_DSN}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
 
   worker:
     image: ${IMAGES_PREFIX:-}app-php-prod
+    depends_on:
+      - php
+      - database
+      - redis
     environment:
       APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MAILER_DSN: ${MAILER_DSN}
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET}
+    command: ["php", "bin/console", "messenger:consume", "async", "scheduler_default", "--time-limit=3600", "--failure-limit=3", "-vv"]
+    healthcheck:
+      # The worker has no HTTP port — we probe that the PHP binary is alive and
+      # the Symfony kernel can boot (catches misconfigured env vars early).
+      test: ["CMD", "php", "bin/console", "about", "--env=prod"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
