@@ -15,6 +15,7 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'app_user')]
+#[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['username'], message: 'This username is already taken')]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[Vich\Uploadable]
@@ -153,6 +154,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    #[ORM\PostPersist]
+    #[ORM\PostUpdate]
+    public function resetAvatarFile(): void
+    {
+        $this->avatarFile = null;
     }
 
     public function isVerified(): bool
