@@ -14,12 +14,22 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
 
+  database:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
   worker:
     image: ${IMAGES_PREFIX:-}app-php-prod
+    restart: unless-stopped
     depends_on:
-      - php
-      - database
-      - redis
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      php:
+        condition: service_started
     environment:
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
