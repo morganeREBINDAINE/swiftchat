@@ -39,7 +39,7 @@ class AdminController extends AbstractController
     #[Route('/users/{id}/toggle-enabled', name: 'admin_user_toggle_enabled', methods: ['POST'])]
     public function toggleEnabled(User $user, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('admin_toggle_' . $user->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('admin_toggle_'.$user->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 

@@ -98,7 +98,7 @@ class AppFixtures extends Fixture
         $user->setEmail($email);
         $user->setPassword($this->hasher->hashPassword($user, self::DEFAULT_PASSWORD));
         $user->setIsVerified($verified);
-        if ($roles !== []) {
+        if ([] !== $roles) {
             $user->setRoles($roles);
         }
 

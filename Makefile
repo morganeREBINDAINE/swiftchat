@@ -13,6 +13,11 @@ perm:
 fixtures:
 	docker compose exec php php bin/console d:f:l --no-interaction
 
+install-hooks:
+	cp scripts/pre-commit.sh .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
+	@echo "Git hooks installed."
+
 # Production targets — requires env vars to be set (see deploy instructions)
 prod-build:
 	docker compose -f compose.yaml -f compose.prod.yaml build --pull --no-cache

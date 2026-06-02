@@ -9,7 +9,8 @@ framework:
 
         # Redis
         #app: cache.adapter.redis
-        #default_redis_provider: redis://localhost
+        # Used by any pool that uses cache.adapter.redis without an explicit provider.
+        default_redis_provider: '%env(REDIS_URL)%'
 
         # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
         #app: cache.adapter.apcu
@@ -19,7 +20,6 @@ framework:
             # Redis is already in the stack (presence), so zero extra infrastructure cost.
             cache.rate_limiter:
                 adapter: cache.adapter.redis
-                provider: '%env(REDIS_URL)%'
 
 when@test:
     framework:
