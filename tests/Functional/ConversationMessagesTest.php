@@ -55,9 +55,10 @@ class ConversationMessagesTest extends WebTestCase
         $container = static::getContainer();
         $userRepo = $container->get(UserRepository::class);
 
+        // alice-bob has fixture messages; alice-admin is a fresh pair with no prior conversation.
         $alice = $userRepo->findByUsername('alice');
-        $bob = $userRepo->findByUsername('bob');
-        $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $bob);
+        $admin = $userRepo->findByUsername('admin');
+        $conversation = $container->get(ConversationService::class)->findOrCreate($alice, $admin);
 
         $client->loginUser($alice);
         $client->request('GET', '/conversations/'.$conversation->getId()->toRfc4122().'/messages');
