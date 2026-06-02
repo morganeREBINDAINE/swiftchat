@@ -109,7 +109,7 @@ class ProfileControllerTest extends WebTestCase
 
         // Minimal 1×1 white PNG — smallest valid image
         $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==');
-        $path = tempnam(sys_get_temp_dir(), 'avatar_') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'avatar_').'.png';
         file_put_contents($path, $png);
 
         $file = new UploadedFile($path, 'avatar.png', 'image/png', null, true);

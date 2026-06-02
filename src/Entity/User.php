@@ -149,7 +149,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->avatarFile = $avatarFile;
         // Touch updatedAt so Doctrine detects a change and triggers preUpdate,
         // which allows VichUploader to process the new file.
-        if ($avatarFile !== null) {
+        if (null !== $avatarFile) {
             $this->updatedAt = new \DateTimeImmutable();
         }
     }
