@@ -962,16 +962,16 @@
         },
         {
             "name": "doctrine/orm",
-            "version": "3.6.5",
+            "version": "3.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/orm.git",
-                "reference": "7e88b416153dceeb563352ca2b12465f09eea173"
+                "reference": "bc217c0e19c3a9eadfa67697143b87c9ba01272c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/orm/zipball/7e88b416153dceeb563352ca2b12465f09eea173",
-                "reference": "7e88b416153dceeb563352ca2b12465f09eea173",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/bc217c0e19c3a9eadfa67697143b87c9ba01272c",
+                "reference": "bc217c0e19c3a9eadfa67697143b87c9ba01272c",
                 "shasum": ""
             },
             "require": {
@@ -1044,9 +1044,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/orm/issues",
-                "source": "https://github.com/doctrine/orm/tree/3.6.5"
+                "source": "https://github.com/doctrine/orm/tree/3.6.7"
             },
-            "time": "2026-05-11T06:47:19+00:00"
+            "time": "2026-05-25T16:45:47+00:00"
         },
         {
             "name": "doctrine/persistence",
@@ -2410,16 +2410,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v8.0.11",
+            "version": "v8.0.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "3156577f46a38aa1b9323aad223de7a9cd426782"
+                "reference": "f200be111431cff4aeae8d086b91180bc4d7efd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/3156577f46a38aa1b9323aad223de7a9cd426782",
-                "reference": "3156577f46a38aa1b9323aad223de7a9cd426782",
+                "url": "https://api.github.com/repos/symfony/console/zipball/f200be111431cff4aeae8d086b91180bc4d7efd7",
+                "reference": "f200be111431cff4aeae8d086b91180bc4d7efd7",
                 "shasum": ""
             },
             "require": {
@@ -2476,7 +2476,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v8.0.11"
+                "source": "https://github.com/symfony/console/tree/v8.0.13"
             },
             "funding": [
                 {
@@ -2496,7 +2496,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-13T12:07:53+00:00"
+            "time": "2026-05-24T08:59:15+00:00"
         },
         {
             "name": "symfony/dependency-injection",
