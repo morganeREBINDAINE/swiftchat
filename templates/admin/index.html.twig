@@ -95,17 +95,17 @@
                     </td>
                     <td>{{ user.createdAt|date('Y-m-d') }}</td>
                     <td>
-                        {% if app.user.id != user.id %}
                         <form method="post" action="{{ path('admin_user_toggle_enabled', {id: user.id}) }}" style="display:inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin_toggle_' ~ user.id) }}">
-                            {% if user.enabled %}
-                                <button type="submit" class="btn btn--sm btn--danger"
-                                    onclick="return confirm('Disable {{ user.username }}?')">Disable</button>
-                            {% else %}
-                                <button type="submit" class="btn btn--sm btn--success">Enable</button>
+                            {% if app.user.id != user.id %}
+                                {% if user.enabled %}
+                                    <button type="submit" class="btn btn--sm btn--danger"
+                                        onclick="return confirm('Disable {{ user.username }}?')">Disable</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn--sm btn--success">Enable</button>
+                                {% endif %}
                             {% endif %}
                         </form>
-                        {% endif %}
                     </td>
                 </tr>
             {% else %}
