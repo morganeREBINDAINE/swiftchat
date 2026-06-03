@@ -92,7 +92,9 @@ class AdminControllerTest extends WebTestCase
         $adminId = $admin->getId()->toRfc4122();
 
         // The admin's own toggle form is hidden in the template ({% if app.user.id != user.id %}),
-        // so we generate the CSRF token programmatically rather than scraping the DOM.
+        // so we generate the CSRF token programmatically. A GET request must happen first
+        // to establish the session — the token manager requires an active session.
+        $client->request('GET', '/admin');
         $token = $container->get('security.csrf.token_manager')
             ->getToken('admin_toggle_'.$adminId)
             ->getValue();

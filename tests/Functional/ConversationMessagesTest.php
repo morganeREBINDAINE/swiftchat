@@ -137,8 +137,13 @@ class ConversationMessagesTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
+        $contents = array_column($data, 'content');
 
-        $this->assertSame(['a', 'b', 'c', 'd'], array_column($data, 'content'));
+        // 'e' must be excluded (it's the cursor boundary).
+        $this->assertNotContains('e', $contents);
+        // a→d must appear and be in chronological order at the tail of the result
+        // (fixture messages from AppFixtures precede the seeded ones chronologically).
+        $this->assertSame(['a', 'b', 'c', 'd'], array_slice($contents, -4));
     }
 
     public function testReturns400ForInvalidCursor(): void
