@@ -18,15 +18,17 @@ install-hooks:
 	chmod +x .git/hooks/pre-commit
 	@echo "Git hooks installed."
 
-# Production targets — requires env vars to be set (see deploy instructions)
+# Production targets — reads secrets from .env.prod.local (never committed)
+PROD_COMPOSE=docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local
+
 prod-build:
-	docker compose -f compose.yaml -f compose.prod.yaml build --pull --no-cache
+	$(PROD_COMPOSE) build --pull --no-cache
 
 prod-up:
-	docker compose -f compose.yaml -f compose.prod.yaml up -d --wait
+	$(PROD_COMPOSE) up -d --wait
 
 prod-down:
-	docker compose -f compose.yaml -f compose.prod.yaml down
+	$(PROD_COMPOSE) down
 
 prod-logs:
-	docker compose -f compose.yaml -f compose.prod.yaml logs -f
+	$(PROD_COMPOSE) logs -f
