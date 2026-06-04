@@ -19,3 +19,8 @@ passthru(sprintf(
     'APP_ENV=test php "%s/../bin/console" doctrine:migrations:migrate --no-interaction --quiet 2>&1',
     __DIR__
 ));
+
+passthru(sprintf(
+    'APP_ENV=test php "%s/../bin/console" doctrine:fixtures:load --no-interaction --quiet 2>&1',
+    __DIR__
+));
