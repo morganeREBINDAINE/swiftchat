@@ -206,10 +206,10 @@ class ConversationMessagesTest extends WebTestCase
         foreach ($contents as $content) {
             $message = new Message($conversation, $sender, $content);
             $em->persist($message);
+            $em->flush();
             $messages[] = $message;
+            usleep(1100);
         }
-
-        $em->flush();
 
         return $messages;
     }
