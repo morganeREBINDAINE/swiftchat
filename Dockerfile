@@ -27,6 +27,7 @@ RUN <<-EOF
 		apcu \
 		intl \
 		opcache \
+		redis \
 		zip \
 		sodium \
 		xml \
